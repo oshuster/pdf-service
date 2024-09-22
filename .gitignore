@@ -4,5 +4,5 @@ logs/
 .idea
 .vscode
 .DS_Store
-!cert/
-cert/*
+!pdf_files/
+pdf_files/*
