@@ -9,7 +9,12 @@ const localStyles = path.resolve(__dirname, "../local_styles/styles.css")
 export const generateBufferPDF = async ({ docName, html, styles }) => {
   const htmlContent = decodeURIComponent(html)
 
-  const browser = await puppeteer.launch()
+  // const browser = await puppeteer.launch()
+  const browser = await puppeteer.launch({
+    executablePath:
+      process.env.PUPPETEER_EXECUTABLE_PATH || "/usr/bin/chromium",
+    args: ["--no-sandbox", "--disable-setuid-sandbox"]
+  })
   const page = await browser.newPage()
 
   await page.setContent(htmlContent, { waitUntil: "networkidle0" })
