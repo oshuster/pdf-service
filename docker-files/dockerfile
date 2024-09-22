@@ -1,0 +1,15 @@
+FROM node:20.12-alpine3.18
+
+RUN apk update && apk add --no-cache git bash
+
+WORKDIR /app/pdf-service
+
+RUN git clone -b main https://github.com/oshuster/pdf-service.git .
+
+ENV PORT=8180
+
+RUN npm install
+
+EXPOSE 8180
+
+CMD ["npm", "start"]

@@ -1,0 +1,8 @@
+node_modules/
+logs/
+.env
+.idea
+.vscode
+.DS_Store
+!cert/
+cert/*
