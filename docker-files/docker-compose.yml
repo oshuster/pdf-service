@@ -3,7 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: "pdf-service:${VERSION}"
+    # image: "pdf-service:${VERSION}"
+    image: "pdf-service:1.0.0"
     container_name: pdf-service
     ports:
       - 8180:8180
