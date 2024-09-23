@@ -44,24 +44,24 @@ const webLogger = winston.createLogger({
     new DailyRotateFile({
       filename: "./logs/%DATE%-web.log",
       datePattern: "YYYY-MM-DD",
-      maxFiles: "14d"
+      maxFiles: "5d"
     })
   ]
 })
 
 // Логування запиту
 export const logRequest = (req, _, next) => {
-  const { method, url, query } = req
-  const message = `[REQUEST >>>] ${method} ${url} ${JSON.stringify(query)}\n\n`
+  const { method, url, body } = req
+  const message = `[REQUEST >>>] ${method} ${url} ${JSON.stringify(body)}\n\n`
   webLogger.info(message)
 
   next()
 }
 
 // Логування відповіді
-export const logResponse = (res) => {
-  const { statusCode, data } = res
-  const message = `[<<< RESPONSE] ${statusCode} ${data}\n\n`
+export const logResponse = (status) => {
+  // const { statusCode, data } = res
+  const message = `[<<< RESPONSE] ${status}\n\n`
   webLogger.info(message)
 }
 
