@@ -1,11 +1,11 @@
-import { errorLogger } from "../config/logConfig.js"
+import { errorLogger, logResponse } from "../config/logConfig.js"
 import { generateBufferPDF } from "../helpers/generateBufferPDF.js"
 
 export const makePdf = async (req, res) => {
   try {
     const pdfBuffer = await generateBufferPDF(req.body)
 
-    // Встановлюємо правильні заголовки
+    // Сетаємо хідера
     res.writeHead(200, {
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename="${
@@ -13,7 +13,8 @@ export const makePdf = async (req, res) => {
       }.pdf"`,
       "Content-Length": pdfBuffer.length
     })
-    // Відправляємо буфер безпосередньо
+    // Відправка буферу без обробки (обробка ламала пдф)
+    logResponse(`PDF file created ${req.body.docName || "document"}.pdf`)
     res.end(pdfBuffer)
   } catch (error) {
     console.error("Error generation pdf file:", error.message)
