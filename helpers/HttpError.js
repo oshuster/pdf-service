@@ -1,3 +1,5 @@
+import { errorLogger } from "../config/logConfig.js"
+
 const messageList = {
   400: "Bad Request",
   401: "Unauthorized",
@@ -9,6 +11,7 @@ const messageList = {
 const HttpError = (status, message = messageList[status]) => {
   const error = new Error(message)
   error.status = status
+  errorLogger(error)
   return error
 }
 
