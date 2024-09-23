@@ -3,8 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    # image: "pdf-service:${VERSION}"
-    image: "pdf-service:1.0.0"
+    image: "pdf-service:${VERSION}"
     container_name: pdf-service
     ports:
       - 8180:8180
@@ -14,16 +13,4 @@ services:
     environment:
       PORT: 8180
       LOG_LEVEL: "info"
-
-  portainer:
-    image: "portainer/portainer-ce:2.20.3"
-    container_name: portainer
-    command: "-H unix:///var/run/docker.sock"
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-      - "portainer_data:/data"
-    ports:
-      - "9000:9000"
-    restart: always
-volumes:
-  portainer_data:
+      ENVIRONMENT: "PRODUCTION"
