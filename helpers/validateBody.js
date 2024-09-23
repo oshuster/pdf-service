@@ -1,15 +1,16 @@
-import HttpError from "./HttpError.js"
+import Joi from "joi";
+import HttpError from "./HttpError.js";
 
 const validateBody = (schema) => {
   const func = (req, _, next) => {
-    const { error } = schema.validate(req.body)
+    const { error } = schema.validate(req.body);
     if (error) {
-      next(HttpError(400, error.message))
+      next(HttpError(400, error.message));
     }
-    next()
-  }
+    next();
+  };
 
-  return func
-}
+  return func;
+};
 
-export default validateBody
+export default validateBody;
