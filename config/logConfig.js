@@ -18,7 +18,7 @@ const serviceLogger = winston.createLogger({
     new DailyRotateFile({
       filename: "./logs/%DATE%-service.log",
       datePattern: "YYYY-MM-DD",
-      maxFiles: "14d" // Зберігати лог-файли протягом 14 днів
+      maxFiles: "5d"
     })
   ]
 })
@@ -31,7 +31,7 @@ const errorLogger = winston.createLogger({
     new DailyRotateFile({
       filename: "./logs/%DATE%-error.log",
       datePattern: "YYYY-MM-DD",
-      maxFiles: "14d"
+      maxFiles: "5d"
     })
   ]
 })
