@@ -1,6 +1,6 @@
 import HttpError from "./HttpError.js"
 
-const validateBody = (schema) => {
+const validatorBody = (schema) => {
   const func = async (req, _, next) => {
     try {
       const value = await schema.validateAsync(req.body, {
@@ -16,4 +16,4 @@ const validateBody = (schema) => {
   return func
 }
 
-export default validateBody
+export default validatorBody

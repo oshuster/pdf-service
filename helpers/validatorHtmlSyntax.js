@@ -1,7 +1,7 @@
 import * as parse5 from "parse5"
 import { errorLogger } from "../config/logConfig.js"
 
-const validateHtmlSyntax = (req, res, next) => {
+const validatorHtmlSyntax = (req, res, next) => {
   try {
     const htmlContent = decodeURIComponent(req.body.html)
 
@@ -14,4 +14,4 @@ const validateHtmlSyntax = (req, res, next) => {
   }
 }
 
-export default validateHtmlSyntax
+export default validatorHtmlSyntax
