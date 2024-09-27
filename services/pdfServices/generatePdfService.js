@@ -1,32 +1,38 @@
-import HttpError from "../../helpers/HttpError.js"
+import { serviceLogger } from "../../config/logConfig.js";
+import HttpError from "../../helpers/HttpError.js";
 
 export const generatePdfService = async ({ body, browser }) => {
-  let page // Оголошуємо змінну один раз перед блоком try
+  let page;
 
   try {
-    const htmlContent = decodeURIComponent(body.html)
-    const stylesContent = decodeURIComponent(body.styles)
+    const htmlContent = decodeURIComponent(body.html);
+    const stylesContent = decodeURIComponent(body.styles || "");
 
-    page = await browser.newPage() // Створюємо сторінку, використовуючи вже оголошену змінну
+    serviceLogger.debug(`DECODED HTML ${htmlContent}`);
+    serviceLogger.debug(`DECODED STYLES ${stylesContent}`);
 
-    await page.setContent(htmlContent, { waitUntil: "networkidle0" })
+    page = await browser.newPage();
 
-    await page.addStyleTag({ content: stylesContent })
+    await page.setContent(htmlContent, { waitUntil: "networkidle0" });
+
+    if (stylesContent.length > 10) {
+      await page.addStyleTag({ content: stylesContent });
+    }
 
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true,
-      margin: { top: "20px", right: "20px", bottom: "20px", left: "20px" }
-    })
+      margin: { top: "20px", right: "20px", bottom: "20px", left: "20px" },
+    });
 
-    return pdfBuffer
+    return pdfBuffer;
   } catch (error) {
-    console.error("Помилка при генерації PDF:", error)
-    throw HttpError(500, "Помилка при генерації PDF")
+    console.error("Помилка при генерації PDF:", error);
+    throw HttpError(500, "Помилка при генерації PDF");
   } finally {
     // Закриваємо сторінку
     if (page) {
-      await page.close()
+      await page.close();
     }
   }
-}
+};
