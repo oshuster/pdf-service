@@ -1,6 +1,13 @@
 import { serviceLogger } from "../../config/logConfig.js";
 import HttpError from "../../helpers/HttpError.js";
 
+import path from "path";
+import { fileURLToPath } from "url";
+import fs from "fs/promises";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 export const generatePdfService = async ({ body, browser }) => {
   let page;
 
@@ -14,8 +21,23 @@ export const generatePdfService = async ({ body, browser }) => {
     page = await browser.newPage();
 
     await page.setContent(htmlContent, { waitUntil: "networkidle0" });
+    // Читаємо локальний файл стилів
+    // const localStylesPath = path.resolve(
+    //   __dirname,
+    //   "../../styles/index-E7Lu8ddP.css"
+    // );
+    // let localStyles = "";
+    // try {
+    //   localStyles = await fs.readFile(localStylesPath, "utf-8");
+    // } catch (err) {
+    //   serviceLogger.error(`Помилка при читанні локальних стилів: ${err}`);
+    // }
 
-    if (stylesContent.length > 10) {
+    // // Об'єднуємо локальні стилі та стилі з запиту
+    // const combinedStyles = `${localStyles}\n${stylesContent}`;
+
+    // Додаємо поєднані стилі на сторінку
+    if (combinedStyles.length > 10) {
       await page.addStyleTag({ content: stylesContent });
     }
 
