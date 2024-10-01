@@ -3,17 +3,17 @@ import { generatePdfService } from "../services/pdfServices/generatePdfService.j
 
 export const pdfController = async (req, res) => {
   try {
-    // Викликаємо сервіс для генерації PDF і ZIP архіву
+    // Генерація ZIP архіву
     const zipFilePath = await generatePdfService(req);
 
-    // Сетаємо хідери для завантаження архіву
+    // Сетаємо заголовки для завантаження ZIP файлу
     res.setHeader("Content-Type", "application/zip");
     res.setHeader(
       "Content-Disposition",
       `attachment; filename="${req.body.docName || "document"}.zip"`
     );
 
-    // Відправляємо ZIP файл
+    // Відправка ZIP файлу
     res.sendFile(zipFilePath, (err) => {
       if (err) {
         console.error("Помилка при відправці архіву:", err);

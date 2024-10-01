@@ -7,3 +7,4 @@ logs/
 !pdf_files/
 pdf_files/*
 middlewares/generated/
+output/

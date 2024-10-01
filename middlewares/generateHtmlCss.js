@@ -27,8 +27,7 @@ export const generateHtmlCss = async (html, styles, docName) => {
     <body>
       ${html}
     </body>
-    </html>
-  `;
+    </html>`;
 
   // Записуємо HTML файл
   await fs.writeFile(htmlFilePath, fullHtml, "utf8");
