@@ -7,30 +7,13 @@ import fs from "fs";
 import fsPromises from "fs/promises";
 import { generateHtmlCss } from "../../middlewares/generateHtmlCss.js";
 import archiver from "archiver";
+import { findFileByPattern } from "../../helpers/findFileByPattern.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const findFileByPattern = async (directory, pattern) => {
-  try {
-    const files = await fsPromises.readdir(directory);
-    return files.find((file) => pattern.test(file));
-  } catch (err) {
-    serviceLogger.error(`Помилка при читанні каталогу: ${err}`);
-    throw HttpError(500, "Помилка при читанні каталогу");
-  }
-};
-
-const fileExists = async (filePath) => {
-  try {
-    await fsPromises.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
-};
-
-export const generatePdfService = async ({ body, browser }) => {
+export const generatePdfService = async ({ body, browser, uuid }) => {
+  console.log("UUID PDF:", uuid);
   let page;
   try {
     const htmlContent = decodeURIComponent(body.html);
@@ -48,7 +31,7 @@ export const generatePdfService = async ({ body, browser }) => {
     const localStylesDoc = await findFileByPattern(stylesDir, docStylePattern);
 
     if (!localStylesMain || !localStylesDoc) {
-      throw HttpError(404, "Файл стилів не знайдено");
+      throw new Error("Файл стилів не знайдено");
     }
 
     const localStylesMainPath = path.join(stylesDir, localStylesMain);
@@ -70,12 +53,17 @@ export const generatePdfService = async ({ body, browser }) => {
     const { htmlFilePath, cssFilePath } = await generateHtmlCss(
       htmlContent,
       combinedStyles,
-      docName
+      docName,
+      uuid
     );
 
     await page.addStyleTag({ content: combinedStyles });
 
-    const pdfFilePath = path.resolve(__dirname, `../../output/${docName}.pdf`);
+    // Створюємо каталог output, якщо він не існує
+    const outputDir = path.resolve(__dirname, "../../output");
+    await fsPromises.mkdir(outputDir, { recursive: true });
+
+    const pdfFilePath = path.join(outputDir, `${docName}-${uuid}.pdf`);
     await page.pdf({
       path: pdfFilePath,
       format: "A4",
@@ -85,50 +73,40 @@ export const generatePdfService = async ({ body, browser }) => {
 
     await page.close();
 
-    // перевірка наявності файлів
-    if (
-      !(await fileExists(htmlFilePath)) ||
-      !(await fileExists(cssFilePath)) ||
-      !(await fileExists(pdfFilePath))
-    ) {
-      throw new Error("Один або кілька файлів не знайдені перед архівуванням.");
-    }
-
     // Створення ZIP архіву
-    const zipFilePath = path.resolve(__dirname, `../../output/${docName}.zip`);
-    const output = fs.createWriteStream(zipFilePath);
-    const archive = archiver("zip", { zlib: { level: 9 } });
+    const zipFilePath = path.join(outputDir, `${docName}-${uuid}.zip`);
+    await new Promise((resolve, reject) => {
+      const output = fs.createWriteStream(zipFilePath);
+      const archive = archiver("zip", { zlib: { level: 9 } });
 
-    // Підключаємо архіватор до потоку
-    archive.pipe(output);
+      output.on("close", () => {
+        console.log(`Архівування завершено, розмір: ${archive.pointer()} байт`);
+        resolve();
+      });
 
-    // Додаємо файли до архіву
-    archive.file(htmlFilePath, { name: `${docName}.html` });
-    archive.file(cssFilePath, { name: `${docName}.css` });
-    archive.file(pdfFilePath, { name: `${docName}.pdf` });
+      archive.on("error", (err) => {
+        console.error("Помилка при архівуванні:", err);
+        reject(err);
+      });
 
-    output.on("close", () => {
-      console.log(`Архів ${zipFilePath} успішно створено`);
+      archive.pipe(output);
+
+      // Додаємо файли до архіву
+      archive.file(htmlFilePath, { name: `${docName}.html` });
+      archive.file(cssFilePath, { name: `${docName}.css` });
+      archive.file(pdfFilePath, { name: `${docName}.pdf` });
+
+      archive.finalize();
     });
 
-    archive.on("warning", (err) => {
-      if (err.code === "ENOENT") {
-        console.warn("Архіватор не знайшов деякі файли", err);
-      } else {
-        throw err;
-      }
-    });
-
-    archive.on("error", (err) => {
-      throw new Error(`Помилка архівування: ${err.message}`);
-    });
-
-    // Закінчуємо архівування і очікуємо завершення
-    await archive.finalize();
-
-    return zipFilePath;
+    return {
+      zipFilePath,
+      htmlFilePath,
+      cssFilePath,
+      pdfFilePath,
+    };
   } catch (error) {
     console.error("Помилка при генерації PDF або архіву:", error);
-    throw HttpError(500, "Помилка при генерації PDF або архіву");
+    throw new Error("Помилка при генерації PDF або архіву");
   }
 };

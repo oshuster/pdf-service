@@ -7,12 +7,19 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export const generateHtmlCss = async (html, styles, docName) => {
-  // Шляхи до файлів
-  // E:\QA\nodeJS\pdf-service\middlewares
-  console.log("html file path: ", __dirname);
-  const htmlFilePath = path.resolve(__dirname, `../output/${docName}.html`);
-  const cssFilePath = path.resolve(__dirname, `../output/${docName}.css`);
+export const generateHtmlCss = async (html, styles, docName, uuid) => {
+  console.log("UUID HTML:", uuid);
+  const outputDir = path.resolve(__dirname, "../output");
+  await fs.mkdir(outputDir, { recursive: true });
+
+  const htmlFilePath = path.resolve(
+    __dirname,
+    `../output/${docName}-${uuid}.html`
+  );
+  const cssFilePath = path.resolve(
+    __dirname,
+    `../output/${docName}-${uuid}.css`
+  );
 
   // Структура HTML документа
   const fullHtml = `
