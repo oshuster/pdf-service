@@ -1,6 +1,9 @@
-import { logResponse } from "../config/logConfig.js";
+import { serviceLogger } from "../config/logConfig.js";
 import { cleanupFiles } from "../services/fileServices/cleanupFilesService.js";
 import { generatePdfService } from "../services/pdfServices/generatePdfService.js";
+import "dotenv/config";
+
+const CLEAR_TEMP = process.env.CLEAR_TEMP || "true";
 
 export const pdfController = async (req, res) => {
   try {
@@ -8,7 +11,6 @@ export const pdfController = async (req, res) => {
     const { zipFilePath, htmlFilePath, cssFilePath, pdfFilePath } =
       await generatePdfService(req);
 
-    // Сетаємо заголовки для завантаження ZIP файлу
     res.setHeader("Content-Type", "application/zip");
     res.setHeader(
       "Content-Disposition",
@@ -18,26 +20,33 @@ export const pdfController = async (req, res) => {
     // Відправка ZIP файлу
     res.sendFile(zipFilePath, (err) => {
       if (err) {
+        serviceLogger.error(`Помилка при відправці архіву: ${err}`);
         console.error("Помилка при відправці архіву:", err);
         res.status(500).send("Помилка при відправці архіву");
       } else {
-        logResponse(
+        serviceLogger.info(
           `ZIP file created and sent: ${req.body.docName || "document"}.zip`
         );
 
-        // Видаляємо файли після успішної відправки
-        const filesToDelete = [
-          zipFilePath,
-          htmlFilePath,
-          cssFilePath,
-          pdfFilePath,
-        ];
-        cleanupFiles(filesToDelete).catch((error) => {
-          console.error("Помилка при видаленні тимчасових файлів:", error);
-        });
+        if (CLEAR_TEMP === "true") {
+          // Видаляємо файли після успішної відправки
+          const filesToDelete = [
+            zipFilePath,
+            htmlFilePath,
+            cssFilePath,
+            pdfFilePath,
+          ];
+          cleanupFiles(filesToDelete).catch((error) => {
+            serviceLogger.error(
+              `Помилка при видаленні тимчасових файлів: ${error}`
+            );
+            console.error("Помилка при видаленні тимчасових файлів:", error);
+          });
+        }
       }
     });
   } catch (error) {
+    serviceLogger.error(`Помилка при генерації ZIP: ${error}`);
     console.error("Помилка при генерації ZIP:", error);
     res.status(500).send("Помилка при генерації архіву");
   }

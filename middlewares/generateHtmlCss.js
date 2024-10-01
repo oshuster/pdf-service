@@ -1,14 +1,14 @@
 import "dotenv/config";
 import path from "path";
-import fs from "fs/promises"; // Використання асинхронного fs/promises
+import fs from "fs/promises";
 import { fileURLToPath } from "url";
+import { serviceLogger } from "../config/logConfig";
 
 // Еквівалент для __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export const generateHtmlCss = async (html, styles, docName, uuid) => {
-  console.log("UUID HTML:", uuid);
   const outputDir = path.resolve(__dirname, "../output");
   await fs.mkdir(outputDir, { recursive: true });
 
@@ -42,5 +42,8 @@ export const generateHtmlCss = async (html, styles, docName, uuid) => {
   // Записуємо CSS файл
   await fs.writeFile(cssFilePath, styles, "utf8");
 
+  serviceLogger.debug(`Створенні файли: \n
+    html: ${htmlFilePath}\n
+    css: ${cssFilePath}`);
   return { htmlFilePath, cssFilePath };
 };
