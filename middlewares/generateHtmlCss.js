@@ -2,7 +2,7 @@ import "dotenv/config";
 import path from "path";
 import fs from "fs/promises";
 import { fileURLToPath } from "url";
-import { serviceLogger } from "../config/logConfig";
+import { serviceLogger } from "../config/logConfig.js";
 
 // Еквівалент для __dirname
 const __filename = fileURLToPath(import.meta.url);
