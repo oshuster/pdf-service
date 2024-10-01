@@ -6,7 +6,6 @@ export const findFileByPattern = async (directory, pattern) => {
   try {
     const files = await fsPromises.readdir(directory);
     const file = files.find((file) => pattern.test(file));
-    console.log(file);
     return file;
   } catch (err) {
     serviceLogger.error(`Помилка при читанні каталогу: ${err}`);

@@ -24,7 +24,6 @@ export const generatePdfService = async ({ body, browser, uuid }) => {
       mainStylePattern
     );
     serviceLogger.debug(`Знайдено основний файл стилів: ${localStylesMain}`);
-    console.log("Знайдено основний файл стилів: ", localStylesMain);
 
     const docStylePattern = new RegExp(`Document${docName}.*\\.css$`, "i");
 
@@ -32,7 +31,6 @@ export const generatePdfService = async ({ body, browser, uuid }) => {
     serviceLogger.debug(
       `Знайдено файл стилів для документу: ${localStylesDoc}`
     );
-    console.log("Знайдено файл стилів для документу: ", localStylesDoc);
 
     if (!localStylesMain || !localStylesDoc) {
       throw new Error("Файл стилів не знайдено");
