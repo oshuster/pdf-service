@@ -1,7 +1,7 @@
 import { serviceLogger } from "../config/logConfig.js";
 import { cleanupFiles } from "../services/fileServices/cleanupFilesService.js";
-import { generatePdfService } from "../services/pdfServices/generatePdfService.js";
 import "dotenv/config";
+import { generateZipService } from "../services/pdfServices/generateZipService.js";
 
 const CLEAR_TEMP = process.env.CLEAR_TEMP || "true";
 
@@ -9,7 +9,7 @@ export const zipController = async (req, res) => {
   try {
     // Генерація ZIP архіву та отримання всіх шляхів до файлів
     const { zipFilePath, htmlFilePath, cssFilePath, pdfFilePath } =
-      await generatePdfService(req);
+      await generateZipService(req);
 
     res.setHeader("Content-Type", "application/zip");
     res.setHeader(

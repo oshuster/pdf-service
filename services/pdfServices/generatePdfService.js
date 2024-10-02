@@ -10,7 +10,7 @@ import { serviceLogger } from "../../config/logConfig.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export const generatePdfService = async ({ body, browser, uuid }) => {
+export const generatePdfService = async ({ body, browser }) => {
   let page;
   try {
     const htmlContent = decodeURIComponent(body.html);
