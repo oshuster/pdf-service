@@ -1,5 +1,5 @@
 import * as parse5 from "parse5";
-import { errorLogger } from "../config/logConfig.js";
+import { serviceLogger } from "../config/logConfig.js";
 
 export const validatorHtmlSyntax = (req, res, next) => {
   try {
@@ -9,7 +9,7 @@ export const validatorHtmlSyntax = (req, res, next) => {
 
     next();
   } catch (error) {
-    errorLogger(error);
+    serviceLogger.error(error);
     res.status(400).json({ error: "Uncorrect HTML syntax" });
   }
 };

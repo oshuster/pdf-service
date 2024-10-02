@@ -6,13 +6,22 @@ import { pdfRequestSchema } from "../schemas/pdfRequestSchema.js";
 import { validatorBody } from "../middlewares/validatorBody.js";
 import { validatorHtmlSyntax } from "../middlewares/validatorHtmlSyntax.js";
 import { addUuidMiddleware } from "../middlewares/addUuidMiddleware.js";
+import { zipController } from "../controllers/zipController.js";
 
 const pdfServiceRouter = express.Router();
 
 pdfServiceRouter.use(logRequest);
 
 pdfServiceRouter.post(
-  "/make",
+  "/make-zip",
+  validatorBody(pdfRequestSchema),
+  validatorHtmlSyntax,
+  addUuidMiddleware,
+  ctrlWrapper(zipController)
+);
+
+pdfServiceRouter.post(
+  "/make-pdf",
   validatorBody(pdfRequestSchema),
   validatorHtmlSyntax,
   addUuidMiddleware,
