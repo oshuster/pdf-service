@@ -8,5 +8,9 @@ logs/
 pdf_files/*
 middlewares/generated/
 output/
-styles/*
-!styles/
+
+# Ігнорувати всі файли в каталозі styles
+styles/**
+
+# Але дозволити сам каталог styles
+!styles/.gitkeep
