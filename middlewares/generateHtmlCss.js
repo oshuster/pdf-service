@@ -8,17 +8,17 @@ import { serviceLogger } from "../config/logConfig.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export const generateHtmlCss = async (html, styles, docName, uuid) => {
+export const generateHtmlCss = async (html, styles, docNames, uuid) => {
   const outputDir = path.resolve(__dirname, "../output");
   await fs.mkdir(outputDir, { recursive: true });
 
   const htmlFilePath = path.resolve(
     __dirname,
-    `../output/${docName}-${uuid}.html`
+    `../output/${docNames[0]}-${uuid}.html`
   );
   const cssFilePath = path.resolve(
     __dirname,
-    `../output/${docName}-${uuid}.css`
+    `../output/${docNames[0]}-${uuid}.css`
   );
 
   // Структура HTML документа
@@ -29,7 +29,7 @@ export const generateHtmlCss = async (html, styles, docName, uuid) => {
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Generated HTML</title>
-      <link rel="stylesheet" href="${docName}.css">
+      <link rel="stylesheet" href="${docNames[0]}.css">
     </head>
     <body>
       ${html}

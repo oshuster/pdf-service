@@ -14,7 +14,7 @@ export const zipController = async (req, res) => {
     res.setHeader("Content-Type", "application/zip");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="${req.body.docName || "document"}.zip"`
+      `attachment; filename="${req.body.docName[0] || "document"}.zip"`
     );
 
     // Відправка ZIP файлу
@@ -25,7 +25,7 @@ export const zipController = async (req, res) => {
         res.status(500).send("Помилка при відправці архіву");
       } else {
         serviceLogger.info(
-          `ZIP file created and sent: ${req.body.docName || "document"}.zip`
+          `ZIP file created and sent: ${req.body.docName[0] || "document"}.zip`
         );
 
         if (CLEAR_TEMP === "true") {

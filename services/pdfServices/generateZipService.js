@@ -4,8 +4,8 @@ import fs from "fs";
 import fsPromises from "fs/promises";
 import { generateHtmlCss } from "../../middlewares/generateHtmlCss.js";
 import archiver from "archiver";
-import { findFileByPattern } from "../../helpers/findFileByPattern.js";
 import { serviceLogger } from "../../config/logConfig.js";
+import { combineStylesForDocuments } from "../../helpers/combineStylesForDocuments.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,50 +14,25 @@ export const generateZipService = async ({ body, browser, uuid }) => {
   let page;
   try {
     const htmlContent = decodeURIComponent(body.html);
-    const docName = body.docName;
+    const docNames = body.docName;
+    console.log(docNames);
 
     // Пошук файлів стилів
     const stylesDir = path.resolve(__dirname, "../../styles");
-    const mainStylePattern = /^index-\w+\.css$/;
-    const localStylesMain = await findFileByPattern(
-      stylesDir,
-      mainStylePattern
-    );
-    serviceLogger.debug(`Знайдено основний файл стилів: ${localStylesMain}`);
+    const combinedStyles = await combineStylesForDocuments(docNames, stylesDir);
 
-    const docStylePattern = new RegExp(`Document${docName}.*\\.css$`, "i");
-
-    const localStylesDoc = await findFileByPattern(stylesDir, docStylePattern);
-    serviceLogger.debug(
-      `Знайдено файл стилів для документу: ${localStylesDoc}`
-    );
-
-    if (!localStylesMain || !localStylesDoc) {
-      throw new Error("Файл стилів не знайдено");
+    if (!combinedStyles) {
+      throw new Error("Не знайдено стилів для документів");
     }
-
-    // Створення шляху до файлів
-    const localStylesMainPath = path.join(stylesDir, localStylesMain);
-    const localStylesDocPath = path.join(stylesDir, localStylesDoc);
 
     page = await browser.newPage();
 
     await page.setContent(htmlContent, { waitUntil: "networkidle0" });
 
-    const localMainStyles = await fsPromises.readFile(
-      localStylesMainPath,
-      "utf-8"
-    );
-    const localDocStyles = await fsPromises.readFile(
-      localStylesDocPath,
-      "utf-8"
-    );
-    const combinedStyles = `${localMainStyles}\n${localDocStyles}`;
-
     const { htmlFilePath, cssFilePath } = await generateHtmlCss(
       htmlContent,
       combinedStyles,
-      docName,
+      docNames,
       uuid
     );
 
@@ -67,7 +42,7 @@ export const generateZipService = async ({ body, browser, uuid }) => {
     const outputDir = path.resolve(__dirname, "../../output");
     await fsPromises.mkdir(outputDir, { recursive: true });
 
-    const pdfFilePath = path.join(outputDir, `${docName}-${uuid}.pdf`);
+    const pdfFilePath = path.join(outputDir, `${docNames[0]}-${uuid}.pdf`);
     await page.pdf({
       path: pdfFilePath,
       format: "A4",
@@ -79,7 +54,7 @@ export const generateZipService = async ({ body, browser, uuid }) => {
     serviceLogger.debug(`PDF згенеровано: ${pdfFilePath}`);
 
     // Створення ZIP архіву
-    const zipFilePath = path.join(outputDir, `${docName}-${uuid}.zip`);
+    const zipFilePath = path.join(outputDir, `${docNames[0]}-${uuid}.zip`);
     await new Promise((resolve, reject) => {
       const output = fs.createWriteStream(zipFilePath);
       const archive = archiver("zip", { zlib: { level: 9 } });
@@ -97,9 +72,9 @@ export const generateZipService = async ({ body, browser, uuid }) => {
       archive.pipe(output);
 
       // Додаємо файли до архіву
-      archive.file(htmlFilePath, { name: `${docName}.html` });
-      archive.file(cssFilePath, { name: `${docName}.css` });
-      archive.file(pdfFilePath, { name: `${docName}.pdf` });
+      archive.file(htmlFilePath, { name: `${docNames[0]}.html` });
+      archive.file(cssFilePath, { name: `${docNames[0]}.css` });
+      archive.file(pdfFilePath, { name: `${docNames[0]}.pdf` });
 
       archive.finalize();
       serviceLogger.info(`ZIP-ахів створено: ${zipFilePath}`);

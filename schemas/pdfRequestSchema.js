@@ -1,6 +1,6 @@
 import Joi from "joi";
 
 export const pdfRequestSchema = Joi.object({
-  docName: Joi.string().required(),
+  docName: Joi.array().items(Joi.string()).min(1).required(),
   html: Joi.string().required(),
 });
