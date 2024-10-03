@@ -10,7 +10,7 @@ middlewares/generated/
 output/
 
 # Ігнорувати всі файли в каталозі styles
-styles/**
+styles/*
 
 # Але дозволити сам каталог styles
 !styles/.gitkeep
