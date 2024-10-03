@@ -8,3 +8,5 @@ logs/
 pdf_files/*
 middlewares/generated/
 output/
+styles/*
+!styles/

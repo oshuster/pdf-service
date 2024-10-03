@@ -6,14 +6,22 @@ import { serviceLogger } from "../config/logConfig.js";
 export const combineStylesForDocuments = async (docNames, stylesDir) => {
   let combinedStyles = "";
 
-  // Основний файл стилів
-  const mainStylePattern = /^index-\w+\.css$/;
-  const localStylesMain = await findFileByPattern(stylesDir, mainStylePattern);
-  if (localStylesMain) {
-    const localStylesMainPath = path.join(stylesDir, localStylesMain);
-    const mainStyles = await fsPromises.readFile(localStylesMainPath, "utf-8");
-    combinedStyles += mainStyles;
-    serviceLogger.debug(`Додано основні стилі: ${localStylesMain}`);
+  // RESET STYLES
+  const resetStylePattern = /^reset-styles.css$/;
+  const localResetStylesMain = await findFileByPattern(
+    stylesDir,
+    resetStylePattern
+  );
+
+  if (localResetStylesMain) {
+    const localResetStylesMainPath = path.join(stylesDir, localResetStylesMain);
+    const resetStyles = await fsPromises.readFile(
+      localResetStylesMainPath,
+      "utf-8"
+    );
+
+    combinedStyles += resetStyles;
+    serviceLogger.debug(`Додано ресет стилі: ${localResetStylesMain}`);
   }
 
   // Пошук стилів для кожного документа з масиву
@@ -30,6 +38,26 @@ export const combineStylesForDocuments = async (docNames, stylesDir) => {
     } else {
       serviceLogger.warn(`Стилі для документа ${docName} не знайдено.`);
     }
+  }
+
+  // COMMON-DOCUMENT STYLES
+  const commonDocStylePattern = /^common-document.css$/;
+  const localCommonDoc = await findFileByPattern(
+    stylesDir,
+    commonDocStylePattern
+  );
+
+  if (localCommonDoc) {
+    const localCommonDocPath = path.join(stylesDir, localCommonDoc);
+    const commonDocStyles = await fsPromises.readFile(
+      localCommonDocPath,
+      "utf-8"
+    );
+
+    combinedStyles += `\n${commonDocStyles}`;
+    serviceLogger.debug(`Додано common-document стилі: ${localCommonDoc}`);
+  } else {
+    serviceLogger.warn(`common-styles.css не знайдено`);
   }
 
   return combinedStyles;

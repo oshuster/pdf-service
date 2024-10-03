@@ -15,7 +15,6 @@ export const generateZipService = async ({ body, browser, uuid }) => {
   try {
     const htmlContent = decodeURIComponent(body.html);
     const docNames = body.docName;
-    console.log(docNames);
 
     // Пошук файлів стилів
     const stylesDir = path.resolve(__dirname, "../../styles");
