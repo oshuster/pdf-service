@@ -2,6 +2,7 @@ import { serviceLogger } from "../config/logConfig.js";
 import { cleanupFiles } from "../services/fileServices/cleanupFilesService.js";
 import "dotenv/config";
 import { generateZipService } from "../services/pdfServices/generateZipService.js";
+import { logError } from "../config/logError.js";
 
 const CLEAR_TEMP = process.env.CLEAR_TEMP || "true";
 
@@ -20,7 +21,7 @@ export const zipController = async (req, res) => {
     // Відправка ZIP файлу
     res.sendFile(zipFilePath, (err) => {
       if (err) {
-        serviceLogger.error(`Помилка при відправці архіву: ${err}`);
+        logError(err, req, "Помилка при відправці архіву");
         console.error("Помилка при відправці архіву:", err);
         res.status(500).send("Помилка при відправці архіву");
       } else {
@@ -37,16 +38,14 @@ export const zipController = async (req, res) => {
             pdfFilePath,
           ];
           cleanupFiles(filesToDelete).catch((error) => {
-            serviceLogger.error(
-              `Помилка при видаленні тимчасових файлів: ${error}`
-            );
+            logError(err, req, "Помилка при видаленні тимчасових файлів:");
             console.error("Помилка при видаленні тимчасових файлів:", error);
           });
         }
       }
     });
   } catch (error) {
-    serviceLogger.error(`Помилка при генерації ZIP: ${error}`);
+    logError(error, req, "Помилка при генерації ZIP");
     console.error("Помилка при генерації ZIP:", error);
     res.status(500).send("Помилка при генерації архіву");
   }

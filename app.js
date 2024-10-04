@@ -5,6 +5,7 @@ import "dotenv/config";
 import { serviceLogger } from "./config/logConfig.js";
 import pdfServiceRouter from "./routes/pdfServiceRouter.js";
 import { browserLauncher } from "./services/pdfServices/browserLauncher.js";
+import { logError } from "./config/logError.js";
 
 const HTTP_PORT = process.env.PORT || 3344;
 const app = express();
@@ -52,7 +53,7 @@ const startServer = async () => {
       console.log(`HTTP Server is running. Use our API on port: ${HTTP_PORT}`);
     });
   } catch (error) {
-    serviceLogger.error("Failed to start the server", error);
+    logError(error, null, "Failed to start the server");
     console.error("Failed to start the server", error);
   }
 };

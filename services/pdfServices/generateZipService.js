@@ -6,6 +6,7 @@ import { generateHtmlCss } from "../../middlewares/generateHtmlCss.js";
 import archiver from "archiver";
 import { serviceLogger } from "../../config/logConfig.js";
 import { combineStylesForDocuments } from "../../helpers/combineStylesForDocuments.js";
+import { logError } from "../../config/logError.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -86,8 +87,8 @@ export const generateZipService = async ({ body, browser, uuid }) => {
       pdfFilePath,
     };
   } catch (error) {
+    logError(error, null, "Помилка при генерації PDF або архіву");
     console.error("Помилка при генерації PDF або архіву:", error);
-    serviceLogger.error(`"Помилка при генерації PDF або архіву: ${error}`);
     throw new Error("Помилка при генерації PDF або архіву");
   }
 };

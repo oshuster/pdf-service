@@ -2,6 +2,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { serviceLogger } from "../../config/logConfig.js";
 import { combineStylesForDocuments } from "../../helpers/combineStylesForDocuments.js";
+import { logError } from "../../config/logError.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -38,8 +39,8 @@ export const generatePdfService = async ({ body, browser }) => {
 
     return pdfBuffer;
   } catch (error) {
+    logError(error, null, "Помилка при генерації PDF");
     console.error("Помилка при генерації PDF:", error);
-    serviceLogger.error(`Помилка при генерації PDF: ${error}`);
     throw new Error("Помилка при генерації PDF");
   }
 };

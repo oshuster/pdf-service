@@ -1,53 +1,51 @@
-import puppeteer from "puppeteer"
-import "dotenv/config"
-import { serviceLogger } from "../../config/logConfig.js"
+import puppeteer from "puppeteer";
+import "dotenv/config";
+import { serviceLogger } from "../../config/logConfig.js";
+import { logError } from "../../config/logError.js";
 
-const ENVIRONMENT = process.env.ENVIRONMENT || "PRODUCTION"
+const ENVIRONMENT = process.env.ENVIRONMENT || "PRODUCTION";
 
 export const browserLauncher = async () => {
-  let browser
+  let browser;
   try {
     switch (ENVIRONMENT) {
       case "DEVELOPMENT":
-        browser = await puppeteer.launch()
-        serviceLogger.info(`Browser started in DEVELOPMENT mode`)
-        break
+        browser = await puppeteer.launch();
+        serviceLogger.info(`Browser started in DEVELOPMENT mode`);
+        break;
 
       case "PRODUCTION":
-        const executablePath = process.env.CHROMIUM_PATH || "/usr/bin/chromium"
+        const executablePath = process.env.CHROMIUM_PATH || "/usr/bin/chromium";
 
         // Перевірка шляху до хроміума
         if (!executablePath) {
-          throw new Error("Executable path for Chromium is not defined.")
+          throw new Error("Executable path for Chromium is not defined.");
         }
 
         browser = await puppeteer.launch({
           executablePath,
-          args: ["--no-sandbox", "--disable-setuid-sandbox"]
-        })
-        serviceLogger.info(`Browser started in PRODUCTION mode`)
-        break
+          args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        });
+        serviceLogger.info(`Browser started in PRODUCTION mode`);
+        break;
 
       default:
-        browser = await puppeteer.launch()
+        browser = await puppeteer.launch();
         serviceLogger.warn(
           `Browser started in DEFAULT mode (environment undefined)`
-        )
-        break
+        );
+        break;
     }
 
-    return browser
+    return browser;
   } catch (error) {
-    serviceLogger.error("Browser failed to start", {
-      error: error.message,
-      stack: error.stack
-    })
+    logError(error, null, "Browser failed to start");
 
     if (browser) {
-      await browser.close()
-      serviceLogger.info("Browser instance closed by error")
+      await browser.close();
+      serviceLogger.info("Browser instance closed by error");
     }
 
-    throw error
+    throw error;
   }
-}
+};
