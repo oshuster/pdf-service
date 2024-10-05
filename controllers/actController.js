@@ -1,11 +1,11 @@
 import "dotenv/config";
 import { serviceLogger } from "../config/logConfig.js";
 import { logError } from "../config/logError.js";
-import { generatePdfDocumentService } from "../services/pdfServices/generatePdfDocumentService.js";
+import { generatePdfActService } from "../services/pdfServices/generatePdfActService.js";
 
-export const pdfController = async (req, res) => {
+export const actController = async (req, res) => {
   try {
-    const pdfBuffer = await generatePdfDocumentService(req);
+    const pdfBuffer = await generatePdfActService(req);
 
     // Конвертуємо PDF у Base64
     const base64Pdf = pdfBuffer.toString("base64");
@@ -16,7 +16,7 @@ export const pdfController = async (req, res) => {
     });
 
     serviceLogger.info(
-      `PDF created and sent for document: ${req.body.docName || "document"}`
+      `PDF created and sent for act: ${req.body.docName || "act"}`
     );
   } catch (error) {
     logError(error, req, "Помилка при генерації PDF");

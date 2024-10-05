@@ -7,22 +7,23 @@ import archiver from "archiver";
 import { serviceLogger } from "../../config/logConfig.js";
 import { combineStylesForDocuments } from "../../helpers/combineStylesForDocuments.js";
 import { logError } from "../../config/logError.js";
+import { combineStylesForActs } from "../../helpers/combineStylesForActs.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export const generateZipService = async ({ body, browser, uuid }) => {
+export const generateZipActService = async ({ body, browser, uuid }) => {
   let page;
   try {
     const htmlContent = decodeURIComponent(body.html);
     const docNames = body.docName;
 
     // Пошук файлів стилів
-    const stylesDir = path.resolve(__dirname, "../../styles/documents");
-    const combinedStyles = await combineStylesForDocuments(docNames, stylesDir);
+    const stylesDir = path.resolve(__dirname, "../../styles/acts");
+    const combinedStyles = await combineStylesForActs(docNames, stylesDir);
 
     if (!combinedStyles) {
-      throw new Error("Не знайдено стилів для документів");
+      throw new Error("Не знайдено стилів для акту");
     }
 
     page = await browser.newPage();
@@ -45,8 +46,8 @@ export const generateZipService = async ({ body, browser, uuid }) => {
     const pdfFilePath = path.join(outputDir, `${docNames[0]}-${uuid}.pdf`);
     await page.pdf({
       path: pdfFilePath,
-      format: "A4",
       landscape: body.landscape || false,
+      format: "A4",
       printBackground: true,
       margin: { top: "20px", right: "20px", bottom: "20px", left: "20px" },
     });

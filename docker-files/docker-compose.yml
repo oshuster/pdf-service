@@ -10,7 +10,8 @@ services:
     restart: always
     volumes:
       - "/usr/local/servers/pdf-service/logs:/app/pdf-service/logs"
-      - "/usr/local/servers/pdf-service/styles:/app/pdf-service/styles"
+      - "/usr/local/servers/pdf-service/styles/acts:/app/pdf-service/styles/acts"
+      - "/usr/local/servers/pdf-service/styles/documents:/app/pdf-service/styles/documents"
       - "/usr/local/servers/pdf-service/output:/app/pdf-service/output"
     environment:
       PORT: 8180

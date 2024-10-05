@@ -1,4 +1,4 @@
-import { serviceLogger } from "./logConfig";
+import { serviceLogger } from "./logConfig.js";
 
 export const logError = (error, req = null, message = "An error occurred") => {
   const errorInfo = {
