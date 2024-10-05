@@ -12,8 +12,6 @@ import { actInZipController } from "../controllers/actInZipController.js";
 
 const pdfServiceRouter = express.Router();
 
-pdfServiceRouter.use(logRequest);
-
 pdfServiceRouter.post(
   "/make-zip",
   validatorBody(pdfRequestSchema),
