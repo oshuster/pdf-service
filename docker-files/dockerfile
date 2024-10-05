@@ -48,8 +48,7 @@ ENV ENVIRONMENT=PRODUCTION
 
 WORKDIR /app/pdf-service
 
-# RUN git clone -b main https://github.com/oshuster/pdf-service.git .
-RUN git clone -b local-styles https://github.com/oshuster/pdf-service.git .
+RUN git clone -b main https://github.com/oshuster/pdf-service.git .
 
 RUN npm install
 
