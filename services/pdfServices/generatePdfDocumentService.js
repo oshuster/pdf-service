@@ -38,7 +38,11 @@ export const generatePdfDocumentService = async ({ body, browser }) => {
     await page.close();
     serviceLogger.debug(`PDF згенеровано для документа: ${docNames[0]}`);
 
-    return pdfBuffer;
+    const buffer = Buffer.isBuffer(pdfBuffer)
+      ? pdfBuffer
+      : Buffer.from(pdfBuffer);
+
+    return buffer;
   } catch (error) {
     logError(error, null, "Помилка при генерації PDF");
     console.error("Помилка при генерації PDF:", error);
