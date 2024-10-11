@@ -1,17 +1,15 @@
 import "dotenv/config";
 import { logError } from "../config/logError.js";
+import { generatePdfDocumentService } from "../services/pdfServices/generatePdfDocumentService.js";
+import { generateZipDocumetsService } from "../services/pdfServices/generateZipDocumentsService.js";
 import { sendZipFile } from "../helpers/sendZipFile.js";
-import { generateZipService } from "../services/pdfServices/generateZipActService.js";
 import { sendPdfAsBase64 } from "../helpers/sendBase64.js";
-import { generatePdfService } from "../services/pdfServices/generatePdfService.js";
 
-export const pdfController = async (req, res) => {
+export const pdfDocumentController = async (req, res) => {
   try {
-    // statment for ZIP
     if (req.body.zip) {
-      // Генерація ZIP архіву та отримання всіх шляхів до файлів
       const { zipFilePath, htmlFilePath, cssFilePath, pdfFilePath } =
-        await generateZipService(req);
+        await generateZipDocumetsService(req);
 
       // Відправка ZIP файлу
       sendZipFile(
@@ -23,8 +21,8 @@ export const pdfController = async (req, res) => {
         pdfFilePath
       );
     } else {
-      const pdfBuffer = await generatePdfService(req);
-      // statment PDF
+      const pdfBuffer = await generatePdfDocumentService(req);
+
       sendPdfAsBase64(req, res, pdfBuffer);
     }
   } catch (error) {
