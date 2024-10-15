@@ -1,5 +1,9 @@
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
+import "dotenv/config";
+import { serviceLogger } from "./logConfig";
+
+const ENVIRONMENT = process.env.ENVIRONMENT || "PRODUCTION";
 
 const options = {
   definition: {
@@ -68,7 +72,14 @@ export const swaggerDocs = (app, port) => {
     swaggerUi.serve,
     swaggerUi.setup(swaggerSpec)
   );
-  console.log(
-    `Swagger Docs доступні за адресою: http://localhost:${port}/api/pdf-service/swagger-docs`
-  );
+
+  if (ENVIRONMENT === "DEVELOPMENT") {
+    serviceLogger.info(
+      `Swagger Docs доступні за адресою: http://localhost:${port}/api/pdf-service/swagger-docs`
+    );
+  } else {
+    serviceLogger.info(
+      `Swagger Docs доступні за адресою: https://gdzapp.com/api/pdf-service/swagger-docs`
+    );
+  }
 };
