@@ -5,24 +5,24 @@ import fsPromises from "fs/promises";
 import { generateHtmlCss } from "../../middlewares/generateHtmlCss.js";
 import archiver from "archiver";
 import { serviceLogger } from "../../config/logConfig.js";
+import { combineStylesForDocuments } from "../../helpers/combineStylesForDocuments.js";
 import { logError } from "../../config/logError.js";
-import { combineStylesForAll } from "../../helpers/combineStylesForAll.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export const generateZipService = async ({ body, browser, uuid }) => {
+export const generateZipDocumetsService = async ({ body, browser, uuid }) => {
   let page;
   try {
     const htmlContent = decodeURIComponent(body.html);
     const docNames = body.docName;
 
     // Пошук файлів стилів
-    const stylesDir = path.resolve(__dirname, "../../styles/all-pdf-styles");
-    const combinedStyles = await combineStylesForAll(docNames, stylesDir);
+    const stylesDir = path.resolve(__dirname, "../../../styles/documents");
+    const combinedStyles = await combineStylesForDocuments(docNames, stylesDir);
 
     if (!combinedStyles) {
-      throw new Error("Не знайдено стилів для акту");
+      throw new Error("Не знайдено стилів для документів");
     }
 
     page = await browser.newPage();
@@ -39,14 +39,14 @@ export const generateZipService = async ({ body, browser, uuid }) => {
     await page.addStyleTag({ content: combinedStyles });
 
     // Створюємо каталог output, якщо він не існує
-    const outputDir = path.resolve(__dirname, "../../output");
+    const outputDir = path.resolve(__dirname, "../../../output");
     await fsPromises.mkdir(outputDir, { recursive: true });
 
     const pdfFilePath = path.join(outputDir, `${docNames[0]}-${uuid}.pdf`);
     await page.pdf({
       path: pdfFilePath,
-      landscape: body.landscape || false,
       format: "A4",
+      landscape: body.landscape || false,
       printBackground: true,
       margin: { top: "20px", right: "20px", bottom: "20px", left: "20px" },
     });

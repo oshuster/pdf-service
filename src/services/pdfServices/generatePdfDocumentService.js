@@ -14,7 +14,7 @@ export const generatePdfDocumentService = async ({ body, browser }) => {
     const docNames = body.docName;
 
     // Пошук файлів стилів
-    const stylesDir = path.resolve(__dirname, "../../styles/documents");
+    const stylesDir = path.resolve(__dirname, "../../../styles/documents");
 
     const combinedStyles = await combineStylesForDocuments(docNames, stylesDir);
 

@@ -52,12 +52,12 @@ const options = {
               ),
             },
           },
-          required: ["docName", "html"], // Обов'язкові поля
+          required: ["docName", "html"],
         },
       },
     },
   },
-  apis: ["./routes/*.js"], // Переконайтеся, що цей шлях вірний
+  apis: ["./src/routes/*.js"],
 };
 
 const swaggerSpec = swaggerJsdoc(options);

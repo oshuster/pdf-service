@@ -48,10 +48,10 @@ ENV ENVIRONMENT=PRODUCTION
 
 WORKDIR /app/pdf-service
 
-RUN git clone -b change-route https://github.com/oshuster/pdf-service.git .
+RUN git clone -b main https://github.com/oshuster/pdf-service.git .
 
 RUN npm install
 
-EXPOSE 8183
+EXPOSE 8180
 
 CMD ["npm", "start"]

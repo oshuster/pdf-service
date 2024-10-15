@@ -6,7 +6,7 @@ services:
     image: "pdf-service:${VERSION}"
     container_name: pdf-service
     ports:
-      - 8183:8183
+      - 8180:8180
     restart: always
     volumes:
       - "/usr/local/servers/pdf-service/logs:/app/pdf-service/logs"
@@ -14,6 +14,6 @@ services:
       - "/usr/local/servers/pdf-service/styles/documents:/app/pdf-service/styles/documents"
       - "/usr/local/servers/pdf-service/output:/app/pdf-service/output"
     environment:
-      PORT: 8183
+      PORT: 8180
       LOG_LEVEL: "info"
       ENVIRONMENT: "PRODUCTION"

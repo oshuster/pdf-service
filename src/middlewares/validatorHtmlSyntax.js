@@ -1,5 +1,4 @@
 import * as parse5 from "parse5";
-import { serviceLogger } from "../config/logConfig.js";
 import { logError } from "../config/logError.js";
 
 export const validatorHtmlSyntax = (req, res, next) => {
