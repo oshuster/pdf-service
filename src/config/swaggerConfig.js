@@ -28,6 +28,36 @@ const options = {
         PdfRequest: {
           type: "object",
           properties: {
+            docType: {
+              type: "number",
+              description: "Тип документу",
+              minItems: 1,
+              example: 0,
+            },
+            landscape: {
+              type: "boolean",
+              description: "Чи буде PDF у ландшафтному режимі",
+              example: false,
+            },
+            zip: {
+              type: "boolean",
+              description:
+                "Якщо true, генерується ZIP архів з PDF, HTML та CSS",
+              example: false,
+            },
+            html: {
+              type: "string",
+              description: "HTML в форматі encodeURIComponent",
+              example: encodeURIComponent(
+                "<html><body>Document content</body></html>"
+              ),
+            },
+          },
+          required: ["docType", "html"],
+        },
+        docPdfRequest: {
+          type: "object",
+          properties: {
             docName: {
               type: "array",
               items: {
@@ -77,8 +107,14 @@ export const swaggerDocs = (app, port) => {
     serviceLogger.info(
       `Swagger Docs доступні за адресою: http://localhost:${port}/api/pdf-service/swagger-docs`
     );
+    console.log(
+      `Swagger Docs доступні за адресою: http://localhost:${port}/api/pdf-service/swagger-docs`
+    );
   } else {
     serviceLogger.info(
+      `Swagger Docs доступні за адресою: https://gdzapp.com/api/pdf-service/swagger-docs`
+    );
+    console.log(
       `Swagger Docs доступні за адресою: https://gdzapp.com/api/pdf-service/swagger-docs`
     );
   }
