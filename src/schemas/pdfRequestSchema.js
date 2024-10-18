@@ -6,3 +6,10 @@ export const pdfRequestSchema = Joi.object({
   zip: Joi.boolean(),
   html: Joi.string().required(),
 });
+
+export const forAllPdfRequestSchema = Joi.object({
+  docType: Joi.number().required(),
+  landscape: Joi.boolean(),
+  zip: Joi.boolean(),
+  html: Joi.string().required(),
+});

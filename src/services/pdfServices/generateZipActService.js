@@ -11,15 +11,24 @@ import { combineStylesForAll } from "../../helpers/combineStylesForAll.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+/*
+0 - акт
+1 - Рахунок на оплату
+2 - Накладна
+3 - Інвойс
+4 - Реквізит на оплату в податкової
+5 - деталі торгової марки
+ */
+
 export const generateZipService = async ({ body, browser, uuid }) => {
   let page;
   try {
     const htmlContent = decodeURIComponent(body.html);
-    const docNames = body.docName;
+    const { docType } = body;
 
     // Пошук файлів стилів
     const stylesDir = path.resolve(__dirname, "../../../styles/all-pdf-styles");
-    const combinedStyles = await combineStylesForAll(docNames, stylesDir);
+    const combinedStyles = await combineStylesForAll(docType, stylesDir);
 
     if (!combinedStyles) {
       throw new Error("Не знайдено стилів для акту");
@@ -32,7 +41,7 @@ export const generateZipService = async ({ body, browser, uuid }) => {
     const { htmlFilePath, cssFilePath } = await generateHtmlCss(
       htmlContent,
       combinedStyles,
-      docNames,
+      docType,
       uuid
     );
 
@@ -42,7 +51,7 @@ export const generateZipService = async ({ body, browser, uuid }) => {
     const outputDir = path.resolve(__dirname, "../../../output");
     await fsPromises.mkdir(outputDir, { recursive: true });
 
-    const pdfFilePath = path.join(outputDir, `${docNames[0]}-${uuid}.pdf`);
+    const pdfFilePath = path.join(outputDir, `${docType}-${uuid}.pdf`);
     await page.pdf({
       path: pdfFilePath,
       landscape: body.landscape || false,
@@ -55,7 +64,7 @@ export const generateZipService = async ({ body, browser, uuid }) => {
     serviceLogger.debug(`PDF згенеровано: ${pdfFilePath}`);
 
     // Створення ZIP архіву
-    const zipFilePath = path.join(outputDir, `${docNames[0]}-${uuid}.zip`);
+    const zipFilePath = path.join(outputDir, `${docType}-${uuid}.zip`);
     await new Promise((resolve, reject) => {
       const output = fs.createWriteStream(zipFilePath);
       const archive = archiver("zip", { zlib: { level: 9 } });
@@ -73,9 +82,9 @@ export const generateZipService = async ({ body, browser, uuid }) => {
       archive.pipe(output);
 
       // Додаємо файли до архіву
-      archive.file(htmlFilePath, { name: `${docNames[0]}.html` });
-      archive.file(cssFilePath, { name: `${docNames[0]}.css` });
-      archive.file(pdfFilePath, { name: `${docNames[0]}.pdf` });
+      archive.file(htmlFilePath, { name: `${docType}.html` });
+      archive.file(cssFilePath, { name: `${docType}.css` });
+      archive.file(pdfFilePath, { name: `${docType}.pdf` });
 
       archive.finalize();
       serviceLogger.info(`ZIP-ахів створено: ${zipFilePath}`);

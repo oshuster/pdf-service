@@ -11,12 +11,12 @@ export const generatePdfService = async ({ body, browser }) => {
   let page;
   try {
     const htmlContent = decodeURIComponent(body.html);
-    const docNames = body.docName;
+    const { docType } = body;
 
     // Пошук файлів стилів
     const stylesDir = path.resolve(__dirname, "../../../styles/all-pdf-styles");
 
-    const combinedStyles = await combineStylesForAll(docNames, stylesDir);
+    const combinedStyles = await combineStylesForAll(docType, stylesDir);
 
     if (!combinedStyles) {
       throw new Error("Не знайдено стилів для файлу");
@@ -36,7 +36,7 @@ export const generatePdfService = async ({ body, browser }) => {
     });
 
     await page.close();
-    serviceLogger.debug(`PDF згенеровано для файлу: ${docNames[0]}`);
+    serviceLogger.debug(`PDF згенеровано для файлу: ${docType}`);
 
     const buffer = Buffer.isBuffer(pdfBuffer)
       ? pdfBuffer
