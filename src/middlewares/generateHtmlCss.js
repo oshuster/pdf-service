@@ -12,13 +12,15 @@ export const generateHtmlCss = async (html, styles, docType, uuid) => {
   const outputDir = path.resolve(__dirname, "../output");
   await fs.mkdir(outputDir, { recursive: true });
 
+  const fileName = typeof docType === "string" ? docType : docType[0];
+
   const htmlFilePath = path.resolve(
     __dirname,
-    `../output/${docType}-${uuid}.html`
+    `../output/${fileName}-${uuid}.html`
   );
   const cssFilePath = path.resolve(
     __dirname,
-    `../output/${docType}-${uuid}.css`
+    `../output/${fileName}-${uuid}.css`
   );
 
   // Структура HTML документа
@@ -29,7 +31,7 @@ export const generateHtmlCss = async (html, styles, docType, uuid) => {
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Generated HTML</title>
-      <link rel="stylesheet" href="${docType}.css">
+      <link rel="stylesheet" href="${fileName}.css">
     </head>
     <body>
       ${html}
