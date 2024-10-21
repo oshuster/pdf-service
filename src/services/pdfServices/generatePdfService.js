@@ -1,3 +1,4 @@
+import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { serviceLogger } from "../../config/logConfig.js";
@@ -15,7 +16,6 @@ export const generatePdfService = async ({ body, browser }) => {
 
     // Пошук файлів стилів
     const stylesDir = path.resolve(__dirname, "../../../styles/all-pdf-styles");
-
     const combinedStyles = await combineStylesForAll(docType, stylesDir);
 
     if (!combinedStyles) {
@@ -24,10 +24,41 @@ export const generatePdfService = async ({ body, browser }) => {
 
     page = await browser.newPage();
 
-    await page.setContent(htmlContent, { waitUntil: "networkidle0" });
+    // Функція для підвантаження зображень з файлової системи
+    await page.exposeFunction("getBase64Image", async (imageName) => {
+      const imagePath = path.resolve(__dirname, "../../../images", imageName);
+
+      if (fs.existsSync(imagePath)) {
+        const imageBuffer = fs.readFileSync(imagePath);
+        return `data:image/jpeg;base64,${imageBuffer.toString("base64")}`;
+      } else {
+        throw new Error(`Зображення ${imageName} не знайдено`);
+      }
+    });
+
+    // Заміна шляхів до зображень у браузерному контексті
+    const updatedHtmlContent = await page.evaluate(async (html) => {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, "text/html");
+      const images = doc.querySelectorAll("img");
+
+      for (const img of images) {
+        const src = img.getAttribute("src");
+        if (src && src.startsWith("/images/")) {
+          const imageName = src.split("/").pop(); // отримуємо назву файлу
+          const base64Image = await window.getBase64Image(imageName);
+          img.setAttribute("src", base64Image);
+        }
+      }
+
+      return doc.documentElement.outerHTML;
+    }, htmlContent);
+
+    // Встановлюємо оновлений HTML контент
+    await page.setContent(updatedHtmlContent, { waitUntil: "networkidle0" });
     await page.addStyleTag({ content: combinedStyles });
 
-    // Генеруємо PDF у вигляді буфера
+    // Генерація PDF
     const pdfBuffer = await page.pdf({
       format: "A4",
       landscape: body.landscape || false,
