@@ -6,7 +6,7 @@ import { serviceLogger } from "./config/logConfig.js";
 import pdfServiceRouter from "./routes/pdfServiceRouter.js";
 import { browserLauncher } from "./services/pdfServices/browserLauncher.js";
 import { logError } from "./config/logError.js";
-import { swaggerDocs } from "./config/swaggerConfig.js";
+// import { swaggerDocs } from "./config/swaggerConfig.js";
 
 const HTTP_PORT = process.env.PORT || 3344;
 const app = express();
@@ -30,7 +30,7 @@ const startServer = async () => {
     app.use(express.urlencoded({ limit: "3mb", extended: true }));
 
     app.use(
-      "/api/pdf-service",
+      "/",
       (req, res, next) => {
         req.browser = browser;
         next();
@@ -38,7 +38,7 @@ const startServer = async () => {
       pdfServiceRouter
     );
 
-    swaggerDocs(app, HTTP_PORT);
+    // swaggerDocs(app, HTTP_PORT);
 
     app.use((_, res) => {
       res.status(404).json({ message: "Route not found" });

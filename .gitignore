@@ -11,6 +11,7 @@ output/
 
 # Ігнорувати всі файли в каталозі styles
 styles/*
+deploy/*
 
 # Але дозволити сам каталог styles
 !styles/.gitkeep
