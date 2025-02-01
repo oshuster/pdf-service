@@ -18,32 +18,30 @@ export function getTargetDirectory(filename) {
   } else if (/^\d+\.css$/.test(filename)) {
     return stylesDirAll;
   } else {
-    serviceLogger.debug(`Неправильний формат файлу: ${filename}`);
+    serviceLogger.warn(`Неправильний формат файлу: ${filename}`);
     throw new Error('Неправильний формат файлу');
   }
 }
 
-// Функція для резервного копіювання старого файлу за базовим іменем
+// Функція для резервного копіювання старих файлів
 export async function backupOldFiles(targetDir, filename) {
   const baseNameMatch = filename.match(/^(DocumentF\d+)/);
 
   if (!baseNameMatch) {
-    serviceLogger.debug(`Файл ${filename} не підходить під формат пошуку`);
-    console.log(`Файл ${filename} не підходить під формат пошуку`);
+    serviceLogger.info(`Файл ${filename} не підходить під формат пошуку`);
     return;
   }
 
   const baseName = baseNameMatch[1]; // `DocumentF0102003`
   const allFiles = await fs.readdir(targetDir);
 
-  // Фільтруємо файли, які починаються з тієї ж частини
+  // Знаходимо всі файли, що починаються з тієї ж базової назви
   const matchingFiles = allFiles.filter(
     (file) => file.startsWith(baseName) && file.endsWith('.css')
   );
 
   if (matchingFiles.length === 0) {
-    serviceLogger.debug(`Не знайдено попередніх версій файлу ${filename}`);
-    console.log(`Не знайдено попередніх версій файлу ${filename}`);
+    serviceLogger.info(`Не знайдено попередніх версій файлу ${filename}`);
     return;
   }
 
@@ -55,14 +53,10 @@ export async function backupOldFiles(targetDir, filename) {
     const backupFilePath = path.join(backupDir, `${timestamp}_${file}`);
 
     try {
-      await fs.rename(oldFilePath, backupFilePath);
-      serviceLogger.debug(
-        `Файл ${file} переміщено в backup як ${backupFilePath}`
-      );
-      console.log(`Файл ${file} переміщено в backup як ${backupFilePath}`);
+      await fs.move(oldFilePath, backupFilePath, { overwrite: true });
+      serviceLogger.info(`Файл ${file} переміщено в backup: ${backupFilePath}`);
     } catch (error) {
-      serviceLogger.debug(`Помилка переміщення ${file} в backup: ${error}`);
-      console.error(`Помилка переміщення ${file} в backup:`, error);
+      serviceLogger.error(`Помилка переміщення ${file} в backup: ${error}`);
     }
   }
 }
@@ -75,21 +69,24 @@ export async function uploadStylesService(file) {
 
   const { originalname, path: tempPath } = file;
 
-  // Визначаємо, куди зберігати файл
-  const targetDir = getTargetDirectory(originalname);
-  const targetFilePath = path.join(targetDir, originalname);
+  try {
+    // Визначаємо, куди зберігати файл
+    const targetDir = getTargetDirectory(originalname);
+    const targetFilePath = path.join(targetDir, originalname);
 
-  // Резервне копіювання всіх файлів, які починаються з тієї ж базової назви
-  await backupOldFiles(targetDir, originalname);
+    // Резервне копіювання всіх файлів, які починаються з тієї ж базової назви
+    await backupOldFiles(targetDir, originalname);
 
-  // Переміщуємо новий файл у відповідну папку
-  await fs.ensureDir(targetDir);
-  await fs.rename(tempPath, targetFilePath);
+    // Переміщуємо новий файл у відповідну папку
+    await fs.ensureDir(targetDir);
+    await fs.move(tempPath, targetFilePath, { overwrite: true });
 
-  serviceLogger.debug(
-    `Файл ${originalname} успішно збережено в ${targetFilePath}`
-  );
-  console.log(`Файл ${originalname} успішно збережено в ${targetFilePath}`);
-
-  return { message: 'Файл успішно завантажено', fileName: file };
+    serviceLogger.info(
+      `Файл ${originalname} успішно збережено в ${targetFilePath}`
+    );
+    return { message: 'Файл успішно завантажено', fileName: originalname };
+  } catch (error) {
+    serviceLogger.error(`Помилка завантаження файлу ${originalname}: ${error}`);
+    throw new Error('Помилка при завантаженні файлу');
+  }
 }
