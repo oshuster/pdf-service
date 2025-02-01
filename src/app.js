@@ -30,7 +30,7 @@ const startServer = async () => {
     app.use(express.urlencoded({ limit: '3mb', extended: true }));
 
     app.use(
-      '/',
+      '/api/pdf-service',
       (req, res, next) => {
         req.browser = browser;
         next();
