@@ -10,10 +10,12 @@ const __dirname = path.dirname(__filename);
 const stylesDirDocs = path.resolve(__dirname, '../../../styles/documents');
 const stylesDirAll = path.resolve(__dirname, '../../../styles/all-pdf-styles');
 const backupDir = path.resolve(__dirname, '../../../styles_bak');
+const documentRegexp =
+  /^DocumentF\d+(-v\d+\.\d+\.\d+(_\d{2}\.\d{2}\.\d{4})?)?\.css$/;
 
 // Функція визначення директорії за назвою файлу
 export function getTargetDirectory(filename) {
-  if (/^DocumentF\d+\.css$/.test(filename)) {
+  if (documentRegexp.test(filename)) {
     return stylesDirDocs;
   } else if (/^\d+\.css$/.test(filename)) {
     return stylesDirAll;
@@ -27,7 +29,7 @@ export function getTargetDirectory(filename) {
 export async function backupOldFiles(targetDir, filename) {
   let baseName;
 
-  if (/^DocumentF\d+\.css$/.test(filename)) {
+  if (documentRegexp.test(filename)) {
     baseName = filename.match(/^(DocumentF\d+)/)?.[1]; // `DocumentF0102003`
   } else if (/^\d+\.css$/.test(filename)) {
     baseName = filename.match(/^(\d+)/)?.[1]; // `12`
@@ -42,7 +44,7 @@ export async function backupOldFiles(targetDir, filename) {
 
   let matchingFiles = [];
 
-  if (/^DocumentF\d+\.css$/.test(filename)) {
+  if (documentRegexp.test(filename)) {
     // Знайти всі файли, які починаються на `DocumentF0102003`
     matchingFiles = allFiles.filter(
       (file) => file.startsWith(baseName) && file.endsWith('.css')
