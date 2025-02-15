@@ -1,7 +1,5 @@
-import HttpError from "../helpers/HttpError.js";
-
 export const validatorBody = (schema) => {
-  const func = async (req, _, next) => {
+  return async (req, _, next) => {
     try {
       const value = await schema.validateAsync(req.body, {
         abortEarly: false,
@@ -10,8 +8,8 @@ export const validatorBody = (schema) => {
       req.body = value;
       next();
     } catch (error) {
-      next(HttpError(400, error.message));
+      error.status = 400;
+      next(error);
     }
   };
-  return func;
 };
