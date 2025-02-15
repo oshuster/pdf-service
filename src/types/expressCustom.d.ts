@@ -1,9 +1,9 @@
-import { Browser } from "puppeteer";
+import { Page } from 'playwright';
 
 declare global {
   namespace Express {
     interface Request {
-      browser?: Browser;
+      page?: Page;
     }
   }
 }
