@@ -1,42 +1,58 @@
-import path from "path";
-import { fileURLToPath } from "url";
-import { serviceLogger } from "../../config/logConfig.js";
-import { combineStylesForDocuments } from "../../helpers/combineStylesForDocuments.js";
-import { logError } from "../../config/logError.js";
+import { serviceLogger } from '../../config/logConfig.js';
+import { logError } from '../../config/logError.js';
+import { performance } from 'perf_hooks';
+import { getCachedStylesForDocuments } from '../../utils/getCachedStyles.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-export const generatePdfDocumentService = async ({ body, browser }) => {
-  let page;
+export const generatePdfDocumentService = async ({ body, page }) => {
+  const startTime = performance.now();
   try {
     const htmlContent = decodeURIComponent(body.html);
     const docNames = body.docName;
 
-    // Пошук файлів стилів
-    const stylesDir = path.resolve(__dirname, "../../../styles/documents");
+    console.log(`[START] Generating PDF for document: ${docNames.join(', ')}`);
 
-    const combinedStyles = await combineStylesForDocuments(docNames, stylesDir);
+    // Пошук файлів стилів
+    const styleStartTime = performance.now();
+    const combinedStyles = getCachedStylesForDocuments(docNames);
+    const styleEndTime = performance.now();
 
     if (!combinedStyles) {
-      throw new Error("Не знайдено стилів для документів");
+      throw new Error('No document styles found');
     }
 
-    page = await browser.newPage();
+    console.log(
+      `[STYLES] Loaded in ${(styleEndTime - styleStartTime).toFixed(2)}ms`
+    );
 
-    await page.setContent(htmlContent, { waitUntil: "networkidle0" });
-    await page.addStyleTag({ content: combinedStyles });
+    const pageStartTime = performance.now();
+
+    const styledHtml = `<style>${combinedStyles}</style>${htmlContent}`;
+    await page.setContent(styledHtml, { waitUntil: 'networkidle0' });
+    const pageEndTime = performance.now();
+
+    console.log(
+      `[PAGE] Rendered in ${(pageEndTime - pageStartTime).toFixed(2)}ms`
+    );
 
     // Генеруємо PDF у вигляді буфера
+    const pdfStartTime = performance.now();
     const pdfBuffer = await page.pdf({
-      format: "A4",
+      format: 'A4',
       landscape: body.landscape || false,
       printBackground: true,
-      margin: { top: "20px", right: "20px", bottom: "20px", left: "20px" },
+      margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' },
     });
+    const pdfEndTime = performance.now();
 
-    await page.close();
-    serviceLogger.debug(`PDF згенеровано для документа: ${docNames[0]}`);
+    console.log(
+      `[PDF] Generated in ${(pdfEndTime - pdfStartTime).toFixed(2)}ms`
+    );
+
+    serviceLogger.debug(`PDF generated for document: ${docNames[0]}`);
+
+    const endTime = performance.now(); // Завершення вимірювання
+    const totalTime = (endTime - startTime).toFixed(2);
+    console.log(`[SUCCESS] PDF for ${docNames[0]} generated in ${totalTime}ms`);
 
     const buffer = Buffer.isBuffer(pdfBuffer)
       ? pdfBuffer
@@ -44,8 +60,8 @@ export const generatePdfDocumentService = async ({ body, browser }) => {
 
     return buffer;
   } catch (error) {
-    logError(error, null, "Помилка при генерації PDF");
-    console.error("Помилка при генерації PDF:", error);
-    throw new Error("Помилка при генерації PDF");
+    logError(error, null, 'Error generating PDF');
+    console.error('Error generating PDF:', error);
+    throw new Error('Error generating PDF');
   }
 };

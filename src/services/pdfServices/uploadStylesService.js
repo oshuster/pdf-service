@@ -14,29 +14,29 @@ const documentRegexp =
   /^DocumentF\d+(-v\d+\.\d+\.\d+(_\d{2}\.\d{2}\.\d{4})?)?\.css$/;
 
 // Функція визначення директорії за назвою файлу
-export function getTargetDirectory(filename) {
+function getTargetDirectory(filename) {
   if (documentRegexp.test(filename)) {
     return stylesDirDocs;
   } else if (/^\d+\.css$/.test(filename)) {
     return stylesDirAll;
   } else {
-    serviceLogger.warn(`❌ Неправильний формат файлу: ${filename}`);
-    throw new Error('❌ Неправильний формат файлу');
+    serviceLogger.warn(`Incorrect file format: ${filename}`);
+    throw new Error('Incorrect file format');
   }
 }
 
 // Функція для резервного копіювання старих файлів для всіх типів
-export async function backupOldFiles(targetDir, filename) {
+async function backupOldFiles(targetDir, filename) {
   let baseName;
 
   if (documentRegexp.test(filename)) {
-    baseName = filename.match(/^(DocumentF\d+)/)?.[1]; // `DocumentF0102003`
+    baseName = filename.match(/^(DocumentF\d+)/)?.[1]; // `DocumentF000000`
   } else if (/^\d+\.css$/.test(filename)) {
     baseName = filename.match(/^(\d+)/)?.[1]; // `12`
   }
 
   if (!baseName) {
-    serviceLogger.info(`⚠️ Файл ${filename} не підходить під формат пошуку`);
+    serviceLogger.info(`The file ${filename} does not match the search format`);
     return;
   }
 
@@ -45,7 +45,7 @@ export async function backupOldFiles(targetDir, filename) {
   let matchingFiles = [];
 
   if (documentRegexp.test(filename)) {
-    // Знайти всі файли, які починаються на `DocumentF0102003`
+    // Знайти всі файли, які починаються на `DocumentF00000`
     matchingFiles = allFiles.filter(
       (file) => file.startsWith(baseName) && file.endsWith('.css')
     );
@@ -59,7 +59,7 @@ export async function backupOldFiles(targetDir, filename) {
   }
 
   if (matchingFiles.length === 0) {
-    serviceLogger.info(`⚠️ Не знайдено попередніх версій файлу ${filename}`);
+    serviceLogger.info(`No previous versions of file ${filename} found`);
     return;
   }
 
@@ -72,11 +72,9 @@ export async function backupOldFiles(targetDir, filename) {
 
     try {
       await fs.move(oldFilePath, backupFilePath, { overwrite: true });
-      serviceLogger.info(
-        `🔄 Файл ${file} переміщено в backup: ${backupFilePath}`
-      );
+      serviceLogger.info(`File ${file} moved to backup: ${backupFilePath}`);
     } catch (error) {
-      serviceLogger.error(`❌ Помилка переміщення ${file} в backup: ${error}`);
+      serviceLogger.error(`Error moving ${file} to backup: ${error}`);
     }
   }
 }
@@ -84,7 +82,7 @@ export async function backupOldFiles(targetDir, filename) {
 // Функція для обробки завантаження файлу
 export async function uploadStylesService(file) {
   if (!file) {
-    throw new Error('❌ Файл не було надано');
+    throw new Error('File not provided');
   }
 
   const { originalname, path: tempPath } = file;
@@ -102,13 +100,11 @@ export async function uploadStylesService(file) {
     await fs.move(tempPath, targetFilePath, { overwrite: true });
 
     serviceLogger.info(
-      `✅ Файл ${originalname} успішно збережено в ${targetFilePath}`
+      `File ${originalname} successfully saved to ${targetFilePath}`
     );
-    return { message: '✅ Файл успішно завантажено', fileName: originalname };
+    return { message: 'File successfully uploaded', fileName: originalname };
   } catch (error) {
-    serviceLogger.error(
-      `❌ Помилка завантаження файлу ${originalname}: ${error}`
-    );
-    throw new Error('❌ Помилка при завантаженні файлу');
+    serviceLogger.error(`File upload error ${originalname}: ${error}`);
+    throw new Error('Error while uploading file');
   }
 }

@@ -1,51 +1,72 @@
-import puppeteer from "puppeteer";
-import "dotenv/config";
-import { serviceLogger } from "../../config/logConfig.js";
-import { logError } from "../../config/logError.js";
+import { chromium } from 'playwright';
+import { serviceLogger } from '../../config/logConfig.js';
 
-const ENVIRONMENT = process.env.ENVIRONMENT || "PRODUCTION";
+let browserInstance = null;
+const pagePool = [];
+const MAX_PAGES = Number(process.env.MAX_PAGES) || 5;
 
+/**
+ * @typedef {import("playwright").Browser} Browser
+ * @typedef {import("playwright").Page} Page
+ */
+
+/**
+ * Створює або повертає існуючий екземпляр браузера.
+ * @returns {Promise<Browser>}
+ */
 export const browserLauncher = async () => {
-  let browser;
-  try {
-    switch (ENVIRONMENT) {
-      case "DEVELOPMENT":
-        browser = await puppeteer.launch();
-        serviceLogger.info(`Browser started in DEVELOPMENT mode`);
-        break;
+  if (!browserInstance) {
+    try {
+      serviceLogger.info('Launching Playwright Browser...');
+      browserInstance = await chromium.launch({ headless: true });
 
-      case "PRODUCTION":
-        const executablePath = process.env.CHROMIUM_PATH || "/usr/bin/chromium";
+      // Створюємо початковий пул сторінок
+      for (let i = 0; i < MAX_PAGES; i++) {
+        const page = await browserInstance.newPage();
+        pagePool.push(page);
+      }
 
-        // Перевірка шляху до хроміума
-        if (!executablePath) {
-          throw new Error("Executable path for Chromium is not defined.");
-        }
-
-        browser = await puppeteer.launch({
-          executablePath,
-          args: ["--no-sandbox", "--disable-setuid-sandbox"],
-        });
-        serviceLogger.info(`Browser started in PRODUCTION mode`);
-        break;
-
-      default:
-        browser = await puppeteer.launch();
-        serviceLogger.warn(
-          `Browser started in DEFAULT mode (environment undefined)`
-        );
-        break;
+      serviceLogger.info(
+        `Browser is running. Available pages: ${pagePool.length}`
+      );
+    } catch (error) {
+      serviceLogger.error(`Browser launch error: ${error.message}`);
+      throw error;
     }
+  }
+  return browserInstance;
+};
 
-    return browser;
-  } catch (error) {
-    logError(error, null, "Browser failed to start");
+/**
+ * Отримує вільну сторінку з пулу або створює нову.
+ * @returns {Promise<Page>}
+ */
+export const getPage = async () => {
+  if (pagePool.length > 0) {
+    return pagePool.pop();
+  }
+  return await browserInstance.newPage();
+};
 
-    if (browser) {
-      await browser.close();
-      serviceLogger.info("Browser instance closed by error");
-    }
+/**
+ * Повертає сторінку назад у пул або закриває її.
+ * @param {Page} page
+ */
+export const releasePage = (page) => {
+  if (pagePool.length < MAX_PAGES) {
+    pagePool.push(page);
+  } else {
+    page.close();
+  }
+};
 
-    throw error;
+/**
+ * Закриває браузер при завершенні сервера.
+ */
+export const closeBrowser = async () => {
+  if (browserInstance) {
+    await browserInstance.close();
+    browserInstance = null;
+    serviceLogger.info('The browser is closed.');
   }
 };

@@ -1,42 +1,31 @@
-import path from "path";
-import { fileURLToPath } from "url";
-import { serviceLogger } from "../../config/logConfig.js";
-import { logError } from "../../config/logError.js";
-import { combineStylesForAll } from "../../helpers/combineStylesForAll.js";
+import { serviceLogger } from '../../config/logConfig.js';
+import { logError } from '../../config/logError.js';
+import { getCachedStylesForType } from '../../utils/getCachedStyles.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-export const generatePdfService = async ({ body, browser }) => {
-  let page;
+export const generatePdfService = async ({ body, page }) => {
   try {
     const htmlContent = decodeURIComponent(body.html);
     const { docType } = body;
 
     // Пошук файлів стилів
-    const stylesDir = path.resolve(__dirname, "../../../styles/all-pdf-styles");
-
-    const combinedStyles = await combineStylesForAll(docType, stylesDir);
+    const combinedStyles = getCachedStylesForType(docType);
 
     if (!combinedStyles) {
-      throw new Error("Не знайдено стилів для файлу");
+      throw new Error('No document styles found');
     }
 
-    page = await browser.newPage();
-
-    await page.setContent(htmlContent, { waitUntil: "networkidle0" });
-    await page.addStyleTag({ content: combinedStyles });
+    const styledHtml = `<style>${combinedStyles}</style>${htmlContent}`;
+    await page.setContent(styledHtml, { waitUntil: 'networkidle0' });
 
     // Генеруємо PDF у вигляді буфера
     const pdfBuffer = await page.pdf({
-      format: "A4",
+      format: 'A4',
       landscape: body.landscape || false,
       printBackground: true,
-      margin: { top: "20px", right: "20px", bottom: "20px", left: "20px" },
+      margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' },
     });
 
-    await page.close();
-    serviceLogger.debug(`PDF згенеровано для файлу: ${docType}`);
+    serviceLogger.debug(`PDF generated for file: ${docType}`);
 
     const buffer = Buffer.isBuffer(pdfBuffer)
       ? pdfBuffer
@@ -44,8 +33,8 @@ export const generatePdfService = async ({ body, browser }) => {
 
     return buffer;
   } catch (error) {
-    logError(error, null, "Помилка при генерації PDF");
-    console.error("Помилка при генерації PDF:", error);
-    throw new Error("Помилка при генерації PDF");
+    logError(error, null, 'Error generating PDF');
+    console.error('Error generating PDF:', error);
+    throw new Error('Error generating PDF');
   }
 };
