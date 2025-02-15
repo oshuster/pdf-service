@@ -4,18 +4,31 @@ import cors from 'cors';
 import 'dotenv/config';
 import { serviceLogger } from './config/logConfig.js';
 import pdfServiceRouter from './routes/pdfServiceRouter.js';
-import { browserLauncher } from './services/pdfServices/browserLauncher.js';
+import {
+  browserLauncher,
+  getPage,
+  releasePage,
+  closeBrowser, // Додано
+} from './services/pdfServices/browserLauncher.js';
 import { logError } from './config/logError.js';
 import { swaggerDocs } from './config/swaggerConfig.js';
+import { loadStylesIntoCache } from './utils/cacheStyles.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const HTTP_PORT = process.env.PORT || 3344;
 const app = express();
-
-let browser;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const startServer = async () => {
+  const docStylesDir = path.resolve(__dirname, '../styles/documents');
+  const allStylesDir = path.resolve(__dirname, '../styles/all-pdf-styles');
+
   try {
-    browser = await browserLauncher();
+    await browserLauncher();
+    await loadStylesIntoCache(docStylesDir);
+    await loadStylesIntoCache(allStylesDir);
 
     app.use(morgan('tiny'));
     app.use(
@@ -25,15 +38,22 @@ const startServer = async () => {
         allowedHeaders: 'Content-Type,Authorization',
       })
     );
-    // app.use(express.json());
     app.use(express.json({ limit: '3mb' }));
     app.use(express.urlencoded({ limit: '3mb', extended: true }));
 
+    // Передаємо сторінку в `req`
     app.use(
       '/api/pdf-service',
-      (req, res, next) => {
-        req.browser = browser;
-        next();
+      async (req, res, next) => {
+        try {
+          req.page = await getPage();
+          res.on('finish', () => {
+            if (req.page) releasePage(req.page); // Переконуємось, що `req.page` існує
+          });
+          next();
+        } catch (error) {
+          next(error);
+        }
       },
       pdfServiceRouter
     );
@@ -49,11 +69,21 @@ const startServer = async () => {
       res.status(status).json({ message });
     });
 
-    app.listen(HTTP_PORT, () => {
-      serviceLogger.info(
-        `HTTP Server is running. Use our API on port: ${HTTP_PORT}`
-      );
-      console.log(`HTTP Server is running. Use our API on port: ${HTTP_PORT}`);
+    const server = app.listen(HTTP_PORT, () => {
+      serviceLogger.info(`HTTP Server is running on port ${HTTP_PORT}`);
+      console.log(`HTTP Server is running on port ${HTTP_PORT}`);
+    });
+
+    // Закриваємо браузер при завершенні процесу
+    process.on('SIGINT', async () => {
+      console.log('\nShutting down server...');
+      serviceLogger.info('Shutting down server...');
+      await closeBrowser();
+      server.close(() => {
+        console.log('Server closed.');
+        serviceLogger.info('Server closed.');
+        process.exit(0);
+      });
     });
   } catch (error) {
     logError(error, null, 'Failed to start the server');
