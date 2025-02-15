@@ -12,7 +12,7 @@ export const getCachedStylesForDocuments = (docNames) => {
   // Додаємо спільні стилі, якщо вони є
   const resetStyles = stylesCache.get('reset-styles.css') || '';
   const commonStyles = stylesCache.get('common-document.css') || '';
-  combinedStyles += resetStyles + commonStyles;
+  combinedStyles += resetStyles;
 
   if (resetStyles) serviceLogger.debug('Added reset-styles.css');
   if (commonStyles) serviceLogger.debug('Added common-document.css');
@@ -33,6 +33,8 @@ export const getCachedStylesForDocuments = (docNames) => {
       serviceLogger.warn(`No styles found for document: ${docName}`);
     }
   });
+
+  combinedStyles += commonStyles;
 
   return combinedStyles;
 };
