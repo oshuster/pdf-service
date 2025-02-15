@@ -1,19 +1,15 @@
 FROM mcr.microsoft.com/playwright:v1.50.1-noble
 
-# RUN apt-get update && apt-get install -y \
-#     wget \
-#     gnupg2 \
-#     git \
-
 ENV PORT=8180
 ENV ENVIRONMENT=PRODUCTION
 ENV ENVIRONMENT=debug
 
 WORKDIR /app/pdf-service
 
-RUN git clone -b optimization https://github.com/oshuster/pdf-service.git .
+RUN git clone --depth=1 -b optimization https://github.com/oshuster/pdf-service.git .
 
-RUN npm install
+# RUN npm install
+RUN npm install --omit=dev
 
 EXPOSE 8180
 
