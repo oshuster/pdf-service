@@ -3,17 +3,18 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: "pdf-service:${VERSION}"
+    image: pdf-service:playwright
     container_name: pdf-service
     ports:
       - 8180:8180
     restart: always
     volumes:
-      - "/usr/local/servers/pdf-service/logs:/app/pdf-service/logs"
-      - "/usr/local/servers/pdf-service/styles/all-pdf-styles:/app/pdf-service/styles/all-pdf-styles"
-      - "/usr/local/servers/pdf-service/styles/documents:/app/pdf-service/styles/documents"
-      - "/usr/local/servers/pdf-service/output:/app/pdf-service/output"
+      - '/usr/local/servers/pdf-service/logs:/app/pdf-service/logs'
+      - '/usr/local/servers/pdf-service/styles/all-pdf-styles:/app/pdf-service/styles/all-pdf-styles'
+      - '/usr/local/servers/pdf-service/styles/documents:/app/pdf-service/styles/documents'
+      - '/usr/local/servers/pdf-service/output:/app/pdf-service/output'
+      - '/usr/local/servers/pdf-service/styles_bak_auto:/app/pdf-service/styles_bak'
     environment:
       PORT: 8180
-      LOG_LEVEL: "info"
-      ENVIRONMENT: "PRODUCTION"
+      LOG_LEVEL: 'info'
+      ENVIRONMENT: 'PRODUCTION'
