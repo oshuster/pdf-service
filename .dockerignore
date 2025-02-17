@@ -1,4 +1,6 @@
 **/node_modules/
+**/deploy/
+**/docker-files/
 **/dist
 **/logs
 .git
@@ -7,3 +9,4 @@ npm-debug.log
 .coverage.*
 .env
 .aws
+.env.example
