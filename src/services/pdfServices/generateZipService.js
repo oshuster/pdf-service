@@ -187,7 +187,7 @@ export const generateZipService = async (
 
       archive.pipe(output);
 
-      const fileName = isMultiDoc ? body.docName : body.docType[0];
+      const fileName = isMultiDoc ? body.docName[0] : body.docType;
 
       // Додаємо файли до архіву
       archive.file(htmlFilePath, { name: `${fileName}.html` });
@@ -195,7 +195,7 @@ export const generateZipService = async (
       archive.file(pdfFilePath, { name: `${fileName}.pdf` });
 
       archive.finalize();
-      serviceLogger.info(`ZIP files created: ${zipFilePath}`);
+      serviceLogger.info(`Temp ZIP files created: ${zipFilePath}`);
     });
 
     return {

@@ -15,7 +15,7 @@ export const sendZipFile = async (
   const zipName =
     req.body.docType !== undefined
       ? req.body.docType
-      : req.body.docName || 'document';
+      : req.body.docName[0] || 'document';
 
   res.setHeader('Content-Type', 'application/zip');
   res.setHeader(
