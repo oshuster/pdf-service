@@ -187,10 +187,12 @@ export const generateZipService = async (
 
       archive.pipe(output);
 
+      const fileName = isMultiDoc ? body.docName : body.docType[0];
+
       // Додаємо файли до архіву
-      archive.file(htmlFilePath, { name: `${docKey}.html` });
-      archive.file(cssFilePath, { name: `${docKey}.css` });
-      archive.file(pdfFilePath, { name: `${docKey}.pdf` });
+      archive.file(htmlFilePath, { name: `${fileName}.html` });
+      archive.file(cssFilePath, { name: `${fileName}.css` });
+      archive.file(pdfFilePath, { name: `${fileName}.pdf` });
 
       archive.finalize();
       serviceLogger.info(`ZIP files created: ${zipFilePath}`);
