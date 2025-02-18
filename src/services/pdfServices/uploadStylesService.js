@@ -3,6 +3,7 @@ import fs from 'fs-extra';
 import moment from 'moment';
 import { fileURLToPath } from 'url';
 import { serviceLogger } from '../../config/logConfig.js';
+import { loadStylesIntoCache } from '../../utils/cacheStyles.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -102,6 +103,11 @@ export async function uploadStylesService(file) {
     serviceLogger.info(
       `File ${originalname} successfully saved to ${targetFilePath}`
     );
+
+    await loadStylesIntoCache(targetDir);
+
+    serviceLogger.info(`Cache updated after file upload: ${originalname}`);
+
     return { message: 'File successfully uploaded', fileName: originalname };
   } catch (error) {
     serviceLogger.error(`File upload error ${originalname}: ${error}`);
