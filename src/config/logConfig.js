@@ -6,66 +6,46 @@ const LEVEL = process.env.LOG_LEVEL || 'info';
 
 // Налаштування форматів логування
 const { combine, timestamp, printf } = winston.format;
+
 const myFormat = printf(({ level, message, timestamp }) => {
-  return `${timestamp} ${level}: ${message}`;
+  return `[${timestamp}] [PID: ${process.pid}] [PM_ID: ${
+    process.env.pm_id || 'N/A'
+  }] ${level.toUpperCase()}: ${message}`;
 });
+
+const getTransports = (logType) => {
+  const transports = [];
+
+  // Додаємо вивід у файл
+  transports.push(
+    new DailyRotateFile({
+      filename: `./logs/%DATE%-${logType}.log`,
+      datePattern: 'YYYY-MM-DD',
+      maxFiles: '5d',
+      maxSize: '10m',
+      zippedArchive: true,
+    })
+  );
+
+  if (LEVEL === 'debug') {
+    transports.push(new winston.transports.Console());
+  }
+
+  return transports;
+};
 
 // Логер для загальних повідомлень
 const serviceLogger = winston.createLogger({
   level: LEVEL,
   format: combine(timestamp(), myFormat),
-  transports: [
-    new DailyRotateFile({
-      filename: './logs/%DATE%-service.log',
-      datePattern: 'YYYY-MM-DD',
-      maxFiles: '5d',
-      maxSize: 10000000,
-    }),
-  ],
+  transports: getTransports('service'),
 });
 
 // Логер для помилок
 const errorLogger = winston.createLogger({
   level: 'error',
   format: combine(timestamp(), myFormat),
-  transports: [
-    new DailyRotateFile({
-      filename: './logs/%DATE%-error.log',
-      datePattern: 'YYYY-MM-DD',
-      maxFiles: '5d',
-      maxSize: 10000000,
-    }),
-  ],
+  transports: getTransports('error'),
 });
-
-// Логер для запитів та відповідей
-// const webLogger = winston.createLogger({
-//   level: LEVEL,
-//   format: combine(timestamp(), myFormat),
-//   transports: [
-//     new DailyRotateFile({
-//       filename: './logs/%DATE%-web.log',
-//       datePattern: 'YYYY-MM-DD',
-//       maxFiles: '5d',
-//       maxSize: 10000000,
-//     }),
-//   ],
-// });
-
-// Логування запиту
-// export const logRequest = (req, _, next) => {
-//   const { method, url, body } = req;
-//   const message = `[REQUEST >>>] ${method} ${url} ${JSON.stringify(body)}\n\n`;
-//   webLogger.info(message);
-
-//   next();
-// };
-
-// Логування відповіді
-// export const logResponse = (status) => {
-//   // const { statusCode, data } = res
-//   const message = `[<<< RESPONSE] ${status}\n\n`;
-//   webLogger.info(message);
-// };
 
 export { serviceLogger, errorLogger };
