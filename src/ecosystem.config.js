@@ -1,4 +1,6 @@
-module.exports = {
+import { defineConfig } from 'pm2';
+
+export default defineConfig({
   apps: [
     {
       name: 'pdf-service',
@@ -11,4 +13,4 @@ module.exports = {
       watch_delay: 5000,
     },
   ],
-};
+});
