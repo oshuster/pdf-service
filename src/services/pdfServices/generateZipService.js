@@ -126,13 +126,10 @@ const __dirname = path.dirname(__filename);
  * @param {boolean} params.isMultiDoc - Визначає, обробляється один чи кілька документів
  * @returns {Promise<Object>} - Шляхи до згенерованих файлів
  */
-export const generateZipService = async (
-  { body, page, uuid },
-  isMultiDoc = false
-) => {
+export const generateFilesForZip = async (req, isMultiDoc = false) => {
   try {
-    const htmlContent = decodeURIComponent(body.html);
-    const docKey = isMultiDoc ? body.docName : body.docType;
+    const htmlContent = decodeURIComponent(req.html);
+    const docKey = isMultiDoc ? req.docName : req.docType;
 
     // Пошук файлів стилів
     const combinedStyles = isMultiDoc
@@ -143,26 +140,26 @@ export const generateZipService = async (
       throw new Error('No document styles found');
     }
 
-    await page.setContent(htmlContent, { waitUntil: 'domcontentloaded' });
+    await req.page.setContent(htmlContent, { waitUntil: 'domcontentloaded' });
 
     const { htmlFilePath, cssFilePath } = await generateHtmlCss(
       htmlContent,
       combinedStyles,
       docKey,
-      uuid
+      req.uuid
     );
 
-    await page.addStyleTag({ content: combinedStyles });
+    await req.page.addStyleTag({ content: combinedStyles });
 
     // Створюємо каталог output, якщо він не існує
     const outputDir = path.resolve(__dirname, '../../../output');
     await fsPromises.mkdir(outputDir, { recursive: true });
 
-    const pdfFilePath = path.join(outputDir, `${docKey}-${uuid}.pdf`);
-    await page.pdf({
+    const pdfFilePath = path.join(outputDir, `${docKey}-${req.uuid}.pdf`);
+    await req.page.pdf({
       path: pdfFilePath,
       format: 'A4',
-      landscape: body.landscape || false,
+      landscape: req.landscape || false,
       printBackground: true,
       margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' },
     });
@@ -170,7 +167,7 @@ export const generateZipService = async (
     serviceLogger.debug(`PDF generated: ${pdfFilePath}`);
 
     // Створення ZIP архіву
-    const zipFilePath = path.join(outputDir, `${docKey}-${uuid}.zip`);
+    const zipFilePath = path.join(outputDir, `${docKey}-${req.uuid}.zip`);
     await new Promise((resolve, reject) => {
       const output = fs.createWriteStream(zipFilePath);
       const archive = archiver('zip', { zlib: { level: 9 } });
@@ -187,7 +184,7 @@ export const generateZipService = async (
 
       archive.pipe(output);
 
-      const fileName = isMultiDoc ? body.docName[0] : body.docType;
+      const fileName = isMultiDoc ? req.docName[0] : req.docType;
 
       // Додаємо файли до архіву
       archive.file(htmlFilePath, { name: `${fileName}.html` });

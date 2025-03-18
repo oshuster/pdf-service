@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package pdf;
+
+service PdfService {
+  rpc GeneratePdf (PdfRequest) returns (PdfResponse);
+  rpc GeneratePdfForAll (ForAllPdfRequest) returns (PdfResponse);
+}
+
+message PdfRequest {
+  repeated string docName = 1;  // Масив рядків (мінімум 1 елемент)
+  optional bool landscape = 2;  // Опціональне булеве значення
+  optional bool zip = 3;        // Опціональне булеве значення
+  string html = 4;              // Обов’язковий рядок
+}
+
+message ForAllPdfRequest {
+  int32 docType = 1;           // Обов’язкове числове значення
+  optional bool landscape = 2; // Опціональне булеве значення
+  optional bool zip = 3;       // Опціональне булеве значення
+  string html = 4;             // Обов’язковий рядок
+}
+
+message PdfResponse {
+  string base64Data = 1; 
+}

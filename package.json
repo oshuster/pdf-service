@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node ./src/app.js",
-    "dev": "nodemon ./src/app.js",
+    "dev": "nodemon ./src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "knip": "knip"
   },
@@ -14,6 +14,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@grpc/grpc-js": "^1.13.0",
+    "@grpc/proto-loader": "^0.7.13",
     "archiver": "^7.0.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -27,8 +29,6 @@
     "parse5": "^7.1.2",
     "path": "^0.12.7",
     "playwright": "^1.50.1",
-    "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1",
     "uuid": "^10.0.0",
     "winston": "^3.14.2",
     "winston-daily-rotate-file": "^5.0.0"
@@ -38,10 +38,5 @@
     "knip": "^5.44.1",
     "nodemon": "^3.1.7",
     "typescript": "^5.7.3"
-  },
-  "overrides": {
-    "swagger-jsdoc": {
-      "glob": "^11.0.1"
-    }
   }
 }

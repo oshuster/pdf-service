@@ -1,50 +1,44 @@
 import { serviceLogger } from '../config/logConfig.js';
 import { logError } from '../config/logError.js';
 import { cleanupFiles } from '../services/fileServices/cleanupFilesService.js';
+import fs from 'fs/promises';
 
-const CLEAR_TEMP = process.env.CLEAR_TEMP || 'true';
-
-export const sendZipFile = async (
+/**
+ * Відправка ZIP через gRPC
+ * @param {Object} req
+ * @param {Function} callback
+ * @param {string} zipFilePath
+ * @param {Array<string>} filesToDelete
+ */
+export const sendZipFileGrpc = async (
   req,
-  res,
+  callback,
   zipFilePath,
-  htmlFilePath,
-  cssFilePath,
-  pdfFilePath
+  filesToDelete
 ) => {
-  const zipName =
-    req.body.docType !== undefined
-      ? req.body.docType
-      : req.body.docName[0] || 'document';
+  try {
+    // Читаємо ZIP-файл у buffer
+    const zipBuffer = await fs.readFile(zipFilePath);
 
-  res.setHeader('Content-Type', 'application/zip');
-  res.setHeader(
-    'Content-Disposition',
-    `attachment; filename="${zipName}-${req.uuid}.zip"`
-  );
+    serviceLogger.info(`ZIP file created and sent: ${zipFilePath}`);
 
-  res.sendFile(zipFilePath, (err) => {
-    if (err) {
-      logError(err, req, 'Error sending archive');
-      res.status(500).send('Error sending archive');
-    } else {
-      serviceLogger.info(
-        `ZIP file created and sent: ${zipName}-${req.uuid}.zip`
-      );
-
-      if (CLEAR_TEMP === 'true') {
-        // Видаляємо файли після успішної відправки
-        const filesToDelete = [
-          zipFilePath,
-          htmlFilePath,
-          cssFilePath,
-          pdfFilePath,
-        ];
-        cleanupFiles(filesToDelete).catch((error) => {
-          logError(err, req, 'Error deleting temporary files');
-          console.error('Error deleting temporary files:', error);
-        });
-      }
+    // Очищення тимчасових файлів
+    const CLEAR_TEMP = process.env.CLEAR_TEMP || 'true';
+    if (CLEAR_TEMP === 'true') {
+      cleanupFiles(filesToDelete).catch((error) => {
+        logError(error, null, 'Error deleting temporary files');
+        console.error('Error deleting temporary files:', error);
+      });
     }
-  });
+
+    // Повертаємо ZIP як `bytes`
+    callback(null, { pdfData: zipBuffer });
+  } catch (error) {
+    logError(error, req, 'Error sending archive');
+    console.error('Error sending archive:', error);
+    callback({
+      code: grpc.status.INTERNAL,
+      message: 'Error sending archive',
+    });
+  }
 };
