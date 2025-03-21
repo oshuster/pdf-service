@@ -1,8 +1,16 @@
 import 'dotenv/config';
-import { logError } from '../config/logError.js';
-import { generatePdfDocumentService } from '../services/pdfServices/generatePdfDocumentService.js';
+import * as grpc from '@grpc/grpc-js';
 
-export const pdfDocumentController = async (call, callback) => {
+import { ServerUnaryCall, sendUnaryData } from '@grpc/grpc-js';
+import { generatePdfDocumentService } from '../services/pdfServices/generatePdfDocumentService';
+import { serviceLogger } from '../config/logConfig';
+import { DocPdfRequestWithPage } from '../types/types';
+import { PdfResponse } from '../generated/pdf';
+
+export const pdfDocumentController = async (
+  call: ServerUnaryCall<DocPdfRequestWithPage, PdfResponse>,
+  callback: sendUnaryData<PdfResponse>
+) => {
   const req = call.request;
   try {
     // if (req.zip) {
@@ -23,7 +31,9 @@ export const pdfDocumentController = async (call, callback) => {
 
     return callback(null, { base64Data: base64Pdf });
   } catch (error) {
-    logError(error, req, 'Error generating PDF');
+    serviceLogger.error(
+      `Error generating PDF\n REQUEST: ${req} \n ERROR: ${error}`
+    );
     console.error('Error generating PDF:', error);
     return callback({
       code: grpc.status.INTERNAL,

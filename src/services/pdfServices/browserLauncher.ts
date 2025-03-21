@@ -1,20 +1,14 @@
-import { chromium } from 'playwright';
-import { serviceLogger } from '../../config/logConfig.js';
+import { Browser, chromium, Page } from 'playwright';
+import { serviceLogger } from '../../config/logConfig';
 
-let browserInstance = null;
-const pagePool = [];
+let browserInstance: Browser | null = null;
+const pagePool: Page[] = [];
 const MAX_PAGES = Number(process.env.MAX_PAGES) || 5;
 
 /**
- * @typedef {import("playwright").Browser} Browser
- * @typedef {import("playwright").Page} Page
- */
-
-/**
  * Створює або повертає існуючий екземпляр браузера.
- * @returns {Promise<Browser>}
  */
-export const browserLauncher = async () => {
+export const browserLauncher = async (): Promise<Browser> => {
   if (!browserInstance) {
     try {
       serviceLogger.info('Launching Playwright Browser...');
@@ -30,7 +24,7 @@ export const browserLauncher = async () => {
         `Browser is running. Available pages: ${pagePool.length}`
       );
     } catch (error) {
-      serviceLogger.error(`Browser launch error: ${error.message}`);
+      serviceLogger.error(`Browser launch error: ${(error as Error).message}`);
       throw error;
     }
   }
@@ -39,20 +33,24 @@ export const browserLauncher = async () => {
 
 /**
  * Отримує вільну сторінку з пулу або створює нову.
- * @returns {Promise<Page>}
  */
 export const getPage = async () => {
   if (pagePool.length > 0) {
     return pagePool.pop();
   }
+  if (!browserInstance) {
+    throw new Error(
+      'Browser instance is not available. Call browserLauncher() first.'
+    );
+  }
+
   return await browserInstance.newPage();
 };
 
 /**
  * Повертає сторінку назад у пул або закриває її.
- * @param {Page} page
  */
-export const releasePage = (page) => {
+export const releasePage = (page: Page) => {
   if (pagePool.length < MAX_PAGES) {
     pagePool.push(page);
   } else {

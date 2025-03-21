@@ -8,17 +8,17 @@ service PdfService {
 }
 
 message PdfRequest {
-  repeated string docName = 1;  // Масив рядків (мінімум 1 елемент)
-  optional bool landscape = 2;  // Опціональне булеве значення
-  optional bool zip = 3;        // Опціональне булеве значення
-  string html = 4;              // Обов’язковий рядок
+  repeated string docName = 1;  
+  optional bool landscape = 2;  
+  optional bool zip = 3;        
+  string html = 4;              // html markup encodeURIComponent
 }
 
 message ForAllPdfRequest {
-  int32 docType = 1;           // Обов’язкове числове значення
-  optional bool landscape = 2; // Опціональне булеве значення
-  optional bool zip = 3;       // Опціональне булеве значення
-  string html = 4;             // Обов’язковий рядок
+  int32 docType = 1;           
+  optional bool landscape = 2; 
+  optional bool zip = 3;       
+  string html = 4;             // html markup encodeURIComponent
 }
 
 message PdfResponse {

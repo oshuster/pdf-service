@@ -1,12 +1,10 @@
-import { serviceLogger } from '../config/logConfig.js';
-import { stylesCache } from './cacheStyles.js';
+import { serviceLogger } from '../config/logConfig';
+import { stylesCache } from './cacheStyles';
 
 /**
  * Отримує закешовані стилі для масиву документів.
- * @param {string[]} docNames - Масив імен документів.
- * @returns {string} Комбіновані стилі.
  */
-export const getCachedStylesForDocuments = (docNames) => {
+export const getCachedStylesForDocuments = (docNames: string[]): string => {
   let combinedStyles = '';
 
   // Додаємо спільні стилі, якщо вони є
@@ -41,10 +39,8 @@ export const getCachedStylesForDocuments = (docNames) => {
 
 /**
  * Отримує закешовані стилі для певного типу документа.
- * @param {number|string} docType - Тип документу.
- * @returns {string} Комбіновані стилі.
  */
-export const getCachedStylesForType = (docType) => {
+export const getCachedStylesForType = (docType: number): string => {
   const styleKey = `${docType}.css`;
   const combinedStyles = stylesCache.get(styleKey) || '';
 

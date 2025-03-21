@@ -1,11 +1,14 @@
-import { serviceLogger } from '../../config/logConfig.js';
-import { logError } from '../../config/logError.js';
-import { getCachedStylesForDocuments } from '../../utils/getCachedStyles.js';
+import { serviceLogger } from '../../config/logConfig';
+import { DocPdfRequestWithPage } from '../../types/types';
+import { getCachedStylesForDocuments } from '../../utils/getCachedStyles';
 
-export const generatePdfDocumentService = async (req) => {
+export const generatePdfDocumentService = async (
+  req: DocPdfRequestWithPage
+) => {
   try {
     const htmlContent = decodeURIComponent(req.html);
     const docNames = req.docName;
+    const { page, landscape } = req;
 
     // Пошук файлів стилів
     const combinedStyles = getCachedStylesForDocuments(docNames);
@@ -15,12 +18,14 @@ export const generatePdfDocumentService = async (req) => {
     }
 
     const styledHtml = `<style>${combinedStyles}</style>${htmlContent}`;
-    await req.page.setContent(styledHtml, { waitUntil: 'networkidle0' });
+    await page.setContent(styledHtml, {
+      waitUntil: 'networkidle',
+    });
 
     // Генеруємо PDF у вигляді буфера
-    const pdfBuffer = await req.page.pdf({
+    const pdfBuffer = await page.pdf({
       format: 'A4',
-      landscape: req.landscape || false,
+      landscape: landscape || false,
       printBackground: true,
       margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' },
     });
@@ -33,7 +38,7 @@ export const generatePdfDocumentService = async (req) => {
 
     return buffer;
   } catch (error) {
-    logError(error, null, 'Error generating PDF');
+    serviceLogger.error(`Error generating PDF ${error}`);
     console.error('Error generating PDF:', error);
     throw new Error('Error generating PDF');
   }

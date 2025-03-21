@@ -1,15 +1,14 @@
 import path from 'path';
 import fsPromises from 'fs/promises';
-import { serviceLogger } from '../config/logConfig.js';
+import { serviceLogger } from '../config/logConfig';
 
 // Глобальний кеш для всіх стилів
-export const stylesCache = new Map();
+export const stylesCache: Map<string, string> = new Map();
 
 /**
  * Зчитує всі CSS-файли у вказаній директорії та кешує їх у пам’яті.
- * @param {string} stylesDir - Шлях до каталогу стилів.
  */
-export const loadStylesIntoCache = async (stylesDir) => {
+export const loadStylesIntoCache = async (stylesDir: string): Promise<void> => {
   try {
     const files = await fsPromises.readdir(stylesDir);
     let cachedFiles = [];
@@ -33,6 +32,6 @@ export const loadStylesIntoCache = async (stylesDir) => {
 
     serviceLogger.info(`All styles are loaded into the cache.`);
   } catch (error) {
-    serviceLogger.error(`Error caching styles: ${error.message}`);
+    serviceLogger.error(`Error caching styles: ${(error as Error).message}`);
   }
 };
