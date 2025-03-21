@@ -17,6 +17,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const HTTP_PORT = process.env.PORT || 3344;
+const BASE_URL = process.env.BASE_URL || '/';
+
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -43,7 +45,7 @@ const startServer = async () => {
 
     // Передаємо сторінку в `req`
     app.use(
-      '/api/pdf-service',
+      BASE_URL,
       async (req, res, next) => {
         try {
           req.page = await getPage();
