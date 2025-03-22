@@ -17,7 +17,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const HTTP_PORT = process.env.PORT || 3344;
-const BASE_URL = process.env.BASE_URL || '/';
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -45,7 +44,7 @@ const startServer = async () => {
 
     // Передаємо сторінку в `req`
     app.use(
-      BASE_URL,
+      '/',
       async (req, res, next) => {
         try {
           req.page = await getPage();
