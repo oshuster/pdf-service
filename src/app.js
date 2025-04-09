@@ -42,6 +42,8 @@ const startServer = async () => {
     app.use(express.json({ limit: '3mb' }));
     app.use(express.urlencoded({ limit: '3mb', extended: true }));
 
+    swaggerDocs(app, HTTP_PORT);
+
     // Передаємо сторінку в `req`
     app.use(
       '/',
@@ -58,8 +60,6 @@ const startServer = async () => {
       },
       pdfServiceRouter
     );
-
-    swaggerDocs(app, HTTP_PORT);
 
     app.use((_, res) => {
       res.status(404).json({ message: 'Route not found' });
