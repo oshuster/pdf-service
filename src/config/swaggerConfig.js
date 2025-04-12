@@ -1,121 +1,117 @@
-import swaggerJsdoc from "swagger-jsdoc";
-import swaggerUi from "swagger-ui-express";
-import "dotenv/config";
-import { serviceLogger } from "./logConfig.js";
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+import 'dotenv/config';
+import { serviceLogger } from './logConfig.js';
 
-const ENVIRONMENT = process.env.ENVIRONMENT || "PRODUCTION";
+const ENVIRONMENT = process.env.ENVIRONMENT || 'PRODUCTION';
 
 const options = {
   definition: {
-    openapi: "3.0.0",
+    openapi: '3.0.0',
     info: {
-      title: "PDF Generation API",
-      version: "1.0.0",
-      description: "API для генерації PDF документів",
+      title: 'PDF Generation API',
+      version: '1.0.0',
+      description: 'API для генерації PDF документів',
     },
     servers: [
       {
-        url: "http://localhost:3345/api/pdf-service",
-        description: "Development server",
+        url: 'http://localhost:3345/',
+        description: 'Development server',
       },
       {
-        url: "https://gdzapp.com/api/pdf-service",
-        description: "Production server",
+        url: 'https://gdzapp.com/',
+        description: 'Production server',
       },
     ],
     components: {
       schemas: {
         PdfRequest: {
-          type: "object",
+          type: 'object',
           properties: {
             docType: {
-              type: "number",
-              description: "Тип документу",
+              type: 'number',
+              description: 'Тип документу',
               minItems: 1,
               example: 0,
             },
             landscape: {
-              type: "boolean",
-              description: "Чи буде PDF у ландшафтному режимі",
+              type: 'boolean',
+              description: 'Чи буде PDF у ландшафтному режимі',
               example: false,
             },
             zip: {
-              type: "boolean",
+              type: 'boolean',
               description:
-                "Якщо true, генерується ZIP архів з PDF, HTML та CSS",
+                'Якщо true, генерується ZIP архів з PDF, HTML та CSS',
               example: false,
             },
             html: {
-              type: "string",
-              description: "HTML в форматі encodeURIComponent",
+              type: 'string',
+              description: 'HTML в форматі encodeURIComponent',
               example: encodeURIComponent(
-                "<html><body>Document content</body></html>"
+                '<html><body>Document content</body></html>'
               ),
             },
           },
-          required: ["docType", "html"],
+          required: ['docType', 'html'],
         },
         docPdfRequest: {
-          type: "object",
+          type: 'object',
           properties: {
             docName: {
-              type: "array",
+              type: 'array',
               items: {
-                type: "string",
+                type: 'string',
               },
-              description: "Назва документу (масив рядків)",
+              description: 'Назва документу (масив рядків)',
               minItems: 1,
-              example: ["document1", "document2"],
+              example: ['document1', 'document2'],
             },
             landscape: {
-              type: "boolean",
-              description: "Чи буде PDF у ландшафтному режимі",
+              type: 'boolean',
+              description: 'Чи буде PDF у ландшафтному режимі',
               example: false,
             },
             zip: {
-              type: "boolean",
+              type: 'boolean',
               description:
-                "Якщо true, генерується ZIP архів з PDF, HTML та CSS",
+                'Якщо true, генерується ZIP архів з PDF, HTML та CSS',
               example: false,
             },
             html: {
-              type: "string",
-              description: "HTML в форматі encodeURIComponent",
+              type: 'string',
+              description: 'HTML в форматі encodeURIComponent',
               example: encodeURIComponent(
-                "<html><body>Document content</body></html>"
+                '<html><body>Document content</body></html>'
               ),
             },
           },
-          required: ["docName", "html"],
+          required: ['docName', 'html'],
         },
       },
     },
   },
-  apis: ["./src/routes/*.js"],
+  apis: ['./src/routes/*.js'],
 };
 
 const swaggerSpec = swaggerJsdoc(options);
 
 export const swaggerDocs = (app, port) => {
-  app.use(
-    "/api/pdf-service/swagger-docs",
-    swaggerUi.serve,
-    swaggerUi.setup(swaggerSpec)
-  );
+  app.use('/swagger-pdf', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-  if (ENVIRONMENT === "DEVELOPMENT") {
+  if (ENVIRONMENT === 'DEVELOPMENT') {
     serviceLogger.info(
-      `Swagger Docs доступні за адресою: http://localhost:${port}/api/pdf-service/swagger-docs`
+      `Swagger Docs доступні за адресою: http://localhost:${port}/swagger-pdf`
     );
     console.log(
-      `Swagger Docs доступні за адресою: http://localhost:${port}/api/pdf-service/swagger-docs`
+      `Swagger Docs доступні за адресою: http://localhost:${port}/swagger-pdf`
     );
   } else {
     serviceLogger.info(
-      `Swagger Docs доступні за адресою: https://gdzapp.com/api/pdf-service/swagger-docs`
+      `Swagger Docs доступні за адресою: https://gdzapp.com/swagger-pdf`
     );
     console.log(
-      `Swagger Docs доступні за адресою: https://gdzapp.com/api/pdf-service/swagger-docs`
+      `Swagger Docs доступні за адресою: https://gdzapp.com/swagger-pdf`
     );
   }
 };

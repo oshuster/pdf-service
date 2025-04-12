@@ -43,21 +43,7 @@ const startServer = async () => {
     app.use(express.urlencoded({ limit: '3mb', extended: true }));
 
     // Передаємо сторінку в `req`
-    app.use(
-      '/api/pdf-service',
-      async (req, res, next) => {
-        try {
-          req.page = await getPage();
-          res.on('finish', () => {
-            if (req.page) releasePage(req.page); // Переконуємось, що `req.page` існує
-          });
-          next();
-        } catch (error) {
-          next(error);
-        }
-      },
-      pdfServiceRouter
-    );
+    app.use('/', pdfServiceRouter);
 
     swaggerDocs(app, HTTP_PORT);
 

@@ -11,9 +11,25 @@ import { pdfDocumentController } from '../controllers/pdfDocumentsController.js'
 import { pdfController } from '../controllers/pdfController.js';
 import multer from 'multer';
 import { uploadStylesController } from '../controllers/uploadStylesController.js';
+import {
+  getPage,
+  releasePage,
+} from '../services/pdfServices/browserLauncher.js';
 
 const pdfServiceRouter = express.Router();
 const upload = multer({ dest: 'uploads/' });
+
+pdfServiceRouter.use(async (req, res, next) => {
+  try {
+    req.page = await getPage();
+    res.on('finish', () => {
+      if (req.page) releasePage(req.page);
+    });
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
 
 /**
  * @swagger
