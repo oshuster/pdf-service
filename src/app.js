@@ -6,8 +6,6 @@ import { serviceLogger } from './config/logConfig.js';
 import pdfServiceRouter from './routes/pdfServiceRouter.js';
 import {
   browserLauncher,
-  getPage,
-  releasePage,
   closeBrowser, // Додано
 } from './services/pdfServices/browserLauncher.js';
 import { logError } from './config/logError.js';
@@ -17,6 +15,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const HTTP_PORT = process.env.PORT || 3344;
+const SWAGGER_ENABLED = process.env.SWAGGER_ENABLED || false;
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -45,7 +44,7 @@ const startServer = async () => {
     // Передаємо сторінку в `req`
     app.use('/', pdfServiceRouter);
 
-    swaggerDocs(app, HTTP_PORT);
+    if (SWAGGER_ENABLED) swaggerDocs(app, HTTP_PORT);
 
     app.use((_, res) => {
       res.status(404).json({ message: 'Route not found' });

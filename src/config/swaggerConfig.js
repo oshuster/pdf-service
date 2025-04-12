@@ -4,6 +4,7 @@ import 'dotenv/config';
 import { serviceLogger } from './logConfig.js';
 
 const ENVIRONMENT = process.env.ENVIRONMENT || 'PRODUCTION';
+const SWAGGER_URL = process.env.SWAGGER_URL || '/';
 
 const options = {
   definition: {
@@ -97,21 +98,28 @@ const options = {
 const swaggerSpec = swaggerJsdoc(options);
 
 export const swaggerDocs = (app, port) => {
-  app.use('/swagger-pdf', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  const fullPath = `${SWAGGER_URL}/swagger-pdf`;
 
-  if (ENVIRONMENT === 'DEVELOPMENT') {
-    serviceLogger.info(
-      `Swagger Docs доступні за адресою: http://localhost:${port}/swagger-pdf`
-    );
-    console.log(
-      `Swagger Docs доступні за адресою: http://localhost:${port}/swagger-pdf`
-    );
-  } else {
-    serviceLogger.info(
-      `Swagger Docs доступні за адресою: https://gdzapp.com/swagger-pdf`
-    );
-    console.log(
-      `Swagger Docs доступні за адресою: https://gdzapp.com/swagger-pdf`
-    );
-  }
+  app.use(
+    fullPath,
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerSpec, {
+      swaggerOptions: {
+        url: `${fullPath}/swagger.json`,
+      },
+    })
+  );
+
+  app.get(`${fullPath}/swagger.json`, (_, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.send(swaggerSpec);
+  });
+
+  const fullSwaggerUrl =
+    ENVIRONMENT === 'DEVELOPMENT'
+      ? `http://localhost:${port}${fullPath}`
+      : `https://gdzapp.com${fullPath}`;
+
+  serviceLogger.info(`Swagger Docs доступні за адресою: ${fullSwaggerUrl}`);
+  console.log(`Swagger Docs доступні за адресою: ${fullSwaggerUrl}`);
 };
